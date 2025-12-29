@@ -3,7 +3,7 @@
 class Database
 {
     private $host     = "localhost";
-    private $db_name  = "coba"; // Sesuaikan nama DB
+    private $db_name  = "db_siakad_texmaco"; // Sesuaikan nama DB
     private $username = "root";
     private $password = "";
     public $conn;

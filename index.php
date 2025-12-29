@@ -1,53 +1,27 @@
 <?php
-// index.php
 
-// Kita load Controller secara manual (karena tanpa Composer autoloader)
-require_once 'app/Controllers/ProductController.php';
-require_once 'app/Controllers/HomeController.php';
+session_start();
+$_SESSION['error'] = 'asdad';
+require_once 'app/controllers/ProductController.php';
+require_once 'app/controllers/HomeController.php';
+require_once 'app/controllers/AuthController.php';
+require_once 'config/Route.php';
+require_once 'config/Middleware.php';
 
+use App\Controllers\AuthController;
 use App\Controllers\HomeController;
 use App\Controllers\ProductController;
 
-// Ambil parameter 'page' dari URL (contoh: index.php?page=product)
-$page = isset($_GET['page']) ? $_GET['page'] : 'home';
-$id   = isset($_GET['id']) ? $_GET['id'] : null; // Tangkap ID jika ada
+$routes = new Route();
 
-$controller = new ProductController();
+$routes->get('/', [HomeController::class, 'index'], 'authMiddleware');
+$routes->get('/dashboard', [HomeController::class, 'index'], 'authMiddleware');
+$routes->get('/login', [AuthController::class, 'login']);
+$routes->post('/login', [AuthController::class, 'submitLogin']);
+$routes->get('/logout', [AuthController::class, 'logout'], 'authMiddleware');
 
-// LOGIKA ROUTING SEDERHANA
-switch ($page) {
-    case 'home':
-        $home = new HomeController(); // Inisialisasi Controller
-        $home->index();               // Panggil method index
-        break;
+$routes->get('/product', [ProductController::class, 'index'], 'authMiddleware');
+$routes->get('/product/create', [ProductController::class, 'create'], 'authMiddleware');
+$routes->post('/product', [ProductController::class, 'store'], 'authMiddleware');
 
-    // --- READ ---
-    case 'product':
-        $controller->index();
-        break;
-
-    // --- CREATE ---
-    case 'product_create':
-        $controller->create(); // Tampilkan Form
-        break;
-    case 'product_store':
-        $controller->store(); // Proses Simpan
-        break;
-
-    // --- UPDATE ---
-    case 'product_edit':
-        $controller->edit($id); // Tampilkan Form Edit
-        break;
-    case 'product_update':
-        $controller->update($id); // Proses Update
-        break;
-
-    // --- DELETE ---
-    case 'product_delete':
-        $controller->delete($id); // Proses Hapus
-        break;
-
-    default:
-        echo "404 Not Found";
-        break;
-}
+$routes->run();

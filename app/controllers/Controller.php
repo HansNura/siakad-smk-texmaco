@@ -11,9 +11,33 @@ class Controller
     }
 
     // Helper Redirect (Agar kodingan lebih bersih)
-    public function redirect($page)
+    public function redirect($url)
     {
-        header("Location: index.php?page=" . $page);
-        exit;
+        return new class($url)
+        {
+            private $url;
+
+            public function __construct($url)
+            {
+                $this->url = $url;
+            }
+
+            /**
+             * Fungsi berantai untuk set session flash dan eksekusi redirect
+             */
+            public function with($key, $value)
+            {
+                if (session_status() === PHP_SESSION_NONE) {
+                    session_start();
+                }
+
+                // Simpan pesan ke session flash
+                $_SESSION['flash'][$key] = $value;
+
+                // Lakukan pengalihan halaman
+                header("Location: " . $this->url);
+                exit();
+            }
+        };
     }
 }
