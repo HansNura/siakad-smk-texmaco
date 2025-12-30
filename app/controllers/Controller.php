@@ -35,7 +35,7 @@ class Controller
                 $_SESSION['flash'][$key] = $value;
 
                 // Lakukan pengalihan halaman
-                header("Location: " . $this->url);
+                header("Location: " . BASE_URL . '/' . $this->url);
                 exit();
             }
         };

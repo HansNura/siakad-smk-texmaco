@@ -10,6 +10,7 @@ require_once 'config/config.php';
 
 require_once 'app/Controllers/HomeController.php';
 require_once 'app/Controllers/AuthController.php';
+require_once 'app/Controllers/UserController.php';
 
 $routes = require_once 'config/routes.php';
 

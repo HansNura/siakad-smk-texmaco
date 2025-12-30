@@ -23,7 +23,7 @@
     <!--begin::Accessibility Features-->
     <!-- Skip links will be dynamically added by accessibility.js -->
     <meta name="supported-color-schemes" content="light dark" />
-    <link rel="preload" href="public/css/adminlte.css" as="style" />
+    <link rel="preload" href="<?php echo BASE_URL ?>/public/css/adminlte.css" as="style" />
     <!--end::Accessibility Features-->
     <!--begin::Fonts-->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/source-sans-3@5.0.12/index.css"
@@ -39,7 +39,7 @@
         crossorigin="anonymous" />
     <!--end::Third Party Plugin(Bootstrap Icons)-->
     <!--begin::Required Plugin(AdminLTE)-->
-    <link rel="stylesheet" href="public/css/adminlte.css" />
+    <link rel="stylesheet" href="<?php echo BASE_URL ?>/public/css/adminlte.css" />
     <!--end::Required Plugin(AdminLTE)-->
 </head>
 <!--end::Head-->
@@ -56,9 +56,9 @@
             <!--begin::Sidebar Brand-->
             <div class="sidebar-brand">
                 <!--begin::Brand Link-->
-                <a href="public/index.html" class="brand-link">
+                <a href="<?php echo BASE_URL ?>/public/index.html" class="brand-link">
                     <!--begin::Brand Image-->
-                    <img src="public/assets/img/AdminLTELogo.png" alt="AdminLTE Logo"
+                    <img src="<?php echo BASE_URL ?>/public/assets/img/AdminLTELogo.png" alt="AdminLTE Logo"
                         class="brand-image opacity-75 shadow" />
                     <!--end::Brand Image-->
                     <!--begin::Brand Text-->
@@ -140,7 +140,7 @@
     </script>
     <!--end::Required Plugin(Bootstrap 5)-->
     <!--begin::Required Plugin(AdminLTE)-->
-    <script src="public/js/adminlte.js"></script>
+    <script src="<?php echo BASE_URL ?>/public/js/adminlte.js"></script>
     <!--end::Required Plugin(AdminLTE)-->
     <!--begin::OverlayScrollbars Configure-->
     <script>

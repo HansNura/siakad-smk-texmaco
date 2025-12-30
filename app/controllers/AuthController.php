@@ -8,13 +8,6 @@ use App\Models\User;
 
 class AuthController extends Controller
 {
-    private $userModel;
-
-    public function __construct()
-    {
-        $this->userModel = new User();
-    }
-
     public function login()
     {
         // Jika sudah login, lempar ke dashboard
@@ -35,7 +28,7 @@ class AuthController extends Controller
         $password = $_POST['password'];
 
         // Cek user di database
-        $user = $this->userModel->getCredential($username);
+        $user = User::getCredential($username);
 
         // Verifikasi Password
         if (! ($user && password_verify($password, $user['password']))) {

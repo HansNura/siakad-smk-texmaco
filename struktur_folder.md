@@ -26,7 +26,7 @@
 │   ├── config.php
 │   └── routes.php
 │
-├── public/
+├── <?php echo BASE_URL ?>/public/
 │   ├── assets
 │   │   └── img/ # Assets gambar (AdminLTE, dll)
 │   ├── css

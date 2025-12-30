@@ -2,16 +2,18 @@
 // create_admin.php
 
 // 1. Panggil file konfigurasi dan model
-require_once 'config/database.php';
-require_once 'app/models/User.php';
+require_once __DIR__ . '/config/config.php';
+require_once __DIR__ . '/app/Core/Database.php';
+require_once __DIR__ . '/app/Models/User.php';
 
 use App\Models\User;
 
 // 3. Data Admin Dummy
-$username = "admin";
-$password = "admin";
-$role     = "Admin";
-$user     = User::register('admin', 'admin', 'admin');
+$username = "hans";
+$password = "123456";
+$role     = "Siswa";
+
+$user = User::register($username, $password, $role);
 echo "Sedang mencoba membuat user admin...<br>";
 
 // 4. Eksekusi
