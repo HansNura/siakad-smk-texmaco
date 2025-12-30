@@ -31,15 +31,16 @@ class User extends Model
 
     // Fungsi 2: Mendaftarkan User Baru (Untuk Seeder / Admin)
     // Sesuai Sequence Diagram SIA-011
-    public function register($username, $password, $role)
+    public static function register($username, $password, $role)
     {
+        $instance = new self();
         try {
             // ENKRIPSI PASSWORD (PENTING!)
             // Kita pakai PASSWORD_DEFAULT (Bcrypt) sesuai standar keamanan
             $hash = password_hash($password, PASSWORD_DEFAULT);
 
-            $query = "INSERT INTO " . $this->table . " (username, password, role) VALUES (:username, :pass, :role)";
-            $stmt  = $this->conn->prepare($query);
+            $query = "INSERT INTO " . $instance->table . " (username, password, role) VALUES (:username, :pass, :role)";
+            $stmt  = $instance->conn->prepare($query);
             $stmt->bindParam(":username", $username);
             $stmt->bindParam(":pass", $hash);
             $stmt->bindParam(":role", $role);

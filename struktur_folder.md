@@ -1,5 +1,7 @@
 # Struktur Folder
 
+### Struktur folder ini dirancang untuk memudahkan pengembangan web dengan pendekatan MVC (Model-View-Controller). Setiap komponen memiliki tujuan spesifik:
+
 ```
 /siakad-texmaco/
 ├── app/
@@ -42,13 +44,16 @@
 │   │   │   ├── index.php       <-- Tabel Daftar Siswa
 │   │   │   ├── create.php      <-- Form Tambah Siswa
 │   │   │   └── edit.php        <-- Form Edit Siswa
+│   │   │
 │   │   ├── guru/
 │   │   │   ├── index.php
 │   │   │   ├── create.php
 │   │   │   └── edit.php
+│   │   │
 │   │   ├── mapel/
 │   │   │   ├── index.php
-│   │   │   ├── ...
+│   │   │   └── ...
+│   │   │
 │   │   └── kelas/
 │   │       ├── index.php
 │   │       └── ...

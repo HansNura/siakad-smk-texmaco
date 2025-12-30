@@ -7,18 +7,15 @@ require_once 'app/models/User.php';
 
 use App\Models\User;
 
-// 2. Inisialisasi Model
-$userModel = new User();
-
 // 3. Data Admin Dummy
 $username = "admin";
-$password = "admin"; // Password yang akan Anda ketik saat login
+$password = "admin";
 $role     = "Admin";
-
+$user     = User::register('admin', 'admin', 'admin');
 echo "Sedang mencoba membuat user admin...<br>";
 
 // 4. Eksekusi
-if ($userModel->register($username, $password, $role)) {
+if ($user) {
     echo "<h1>SUKSES!</h1>";
     echo "Akun Admin berhasil dibuat.<br>";
     echo "Username: <strong>$username</strong><br>";
