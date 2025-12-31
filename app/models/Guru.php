@@ -32,4 +32,13 @@ class Guru extends Model
             return [];
         }
     }
+
+    public static function findByUserId($user_id)
+    {
+        $instance = new static();
+        $query    = "SELECT * FROM " . $instance->table . " WHERE user_id = :user_id LIMIT 1";
+        $stmt     = $instance->conn->prepare($query);
+        $stmt->execute([':user_id' => $user_id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
 }

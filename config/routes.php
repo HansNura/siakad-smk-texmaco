@@ -1,5 +1,6 @@
 <?php
 
+use App\Controllers\AbsensiController;
 use App\Controllers\AuthController;
 use App\Controllers\GuruController;
 use App\Controllers\HomeController;
@@ -10,6 +11,7 @@ use App\Controllers\PlottingController;
 use App\Controllers\SiswaController;
 use App\Controllers\TahunAjaranController;
 use App\Controllers\UserController;
+use App\Controllers\ValidasiController;
 use App\Core\Route;
 
 $routes = new Route();
@@ -84,5 +86,15 @@ $routes->get('/plotting', [PlottingController::class, 'index'], 'authMiddleware'
 $routes->get('/plotting/manage', [PlottingController::class, 'manage'], 'authMiddleware');
 $routes->post('/plotting/add', [PlottingController::class, 'add'], 'authMiddleware');
 $routes->post('/plotting/remove', [PlottingController::class, 'remove'], 'authMiddleware');
+
+// ABSENSI (GURU)
+$routes->get('/absensi/create', [AbsensiController::class, 'create'], 'authMiddleware');
+$routes->get('/absensi/input', [AbsensiController::class, 'input'], 'authMiddleware');
+$routes->post('/absensi/store', [AbsensiController::class, 'store'], 'authMiddleware');
+
+// VALIDASI (WALI KELAS)
+$routes->get('/validasi', [ValidasiController::class, 'index'], 'authMiddleware');
+$routes->get('/validasi/detail', [ValidasiController::class, 'detail'], 'authMiddleware');
+$routes->post('/validasi/approve', [ValidasiController::class, 'approve'], 'authMiddleware');
 
 return $routes;

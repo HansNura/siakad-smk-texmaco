@@ -18,6 +18,8 @@ require_once 'app/Controllers/KelasController.php';
 require_once 'app/Controllers/MapelController.php';
 require_once 'app/Controllers/JadwalController.php';
 require_once 'app/Controllers/PlottingController.php';
+require_once 'app/Controllers/AbsensiController.php';
+require_once 'app/Controllers/ValidasiController.php';
 
 $routes = require_once 'config/routes.php';
 

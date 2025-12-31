@@ -25,4 +25,12 @@ class Kelas extends Model
         $stmt->execute();
         return $stmt->fetchAll();
     }
+    public static function getByWaliKelas($guru_id)
+    {
+        $instance = new static();
+        $query    = "SELECT * FROM " . $instance->table . " WHERE guru_wali_id = :guru_id LIMIT 1";
+        $stmt     = $instance->conn->prepare($query);
+        $stmt->execute([':guru_id' => $guru_id]);
+        return $stmt->fetch();
+    }
 }
