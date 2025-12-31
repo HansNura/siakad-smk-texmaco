@@ -40,6 +40,7 @@
                     <th style="width: 10px">#</th>
                     <th>Kode Mapel</th>
                     <th>Nama Mapel</th>
+                    <th>Kelompok</th>
                     <th>KKM</th>
                     <th style="width: 150px">Aksi</th>
                 </tr>
@@ -56,6 +57,21 @@
                     <td><span class="badge bg-info text-dark"><?php echo htmlspecialchars($row['kode_mapel']); ?></span>
                     </td>
                     <td><?php echo htmlspecialchars($row['nama_mapel']); ?></td>
+                    <td>
+                        <?php
+                            $badgeClass = 'bg-secondary';
+                            if ($row['kelompok'] == 'A') {
+                                $badgeClass = 'bg-primary';
+                            } elseif ($row['kelompok'] == 'B') {
+                                $badgeClass = 'bg-success';
+                            } elseif (strpos($row['kelompok'], 'C') === 0) {
+                                $badgeClass = 'bg-warning text-dark';
+                            }
+
+                        ?>
+                        <span
+                            class="badge<?php echo $badgeClass; ?>"><?php echo htmlspecialchars($row['kelompok']); ?></span>
+                    </td>
                     <td><?php echo htmlspecialchars($row['kkm']); ?></td>
                     <td>
                         <a href="<?php echo BASE_URL ?>/mapel/edit?id=<?php echo $row['mapel_id'] ?>"

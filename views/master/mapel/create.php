@@ -12,38 +12,50 @@
                         <h3 class="card-title">Tambah Mata Pelajaran</h3>
                     </div>
 
-                    <form action="<?php echo BASE_URL;?>/mapel/store" method="POST">
+                    <form action="<?php echo BASE_URL; ?>/mapel/store" method="POST">
                         <div class="card-body">
 
                             <?php if (isset($_SESSION['flash']['error'])): ?>
-                                <div class="alert alert-danger"><?php echo $_SESSION['flash']['error'];unset($_SESSION['flash']['error']);?></div>
+                            <div class="alert alert-danger">
+                                <?php echo $_SESSION['flash']['error'];unset($_SESSION['flash']['error']); ?></div>
                             <?php endif; ?>
 
                             <div class="form-group">
                                 <label for="kode_mapel">Kode Mapel</label>
                                 <input type="text" class="form-control" id="kode_mapel" name="kode_mapel"
-                                       placeholder="Contoh: MTK, WEB-1"
-                                       style="text-transform: uppercase;" required>
+                                    placeholder="Contoh: MTK, WEB-1" style="text-transform: uppercase;" required>
                                 <small class="text-muted">Kode mapel harus unik dan huruf besar.</small>
                             </div>
 
                             <div class="form-group">
                                 <label for="nama_mapel">Nama Mapel</label>
                                 <input type="text" class="form-control" id="nama_mapel" name="nama_mapel"
-                                       placeholder="Contoh: Matematika Wajib" required>
+                                    placeholder="Contoh: Matematika Wajib" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="kelompok">Kelompok</label>
+                                <select class="form-control" id="kelompok" name="kelompok" required>
+                                    <option value="">-- Pilih Kelompok --</option>
+                                    <option value="A">A - Muatan Nasional</option>
+                                    <option value="B">B - Muatan Kewilayahan</option>
+                                    <option value="C1">C1 - Dasar Bidang Keahlian</option>
+                                    <option value="C2">C2 - Dasar Program Keahlian</option>
+                                    <option value="C3">C3 - Kompetensi Keahlian</option>
+                                </select>
                             </div>
 
                             <div class="form-group">
                                 <label for="kkm">KKM</label>
-                                <input type="number" class="form-control" id="kkm" name="kkm"
-                                       value="75" min="0" max="100" required>
+                                <input type="number" class="form-control" id="kkm" name="kkm" value="75" min="0"
+                                    max="100" required>
                             </div>
 
                         </div>
 
                         <div class="card-footer">
                             <button type="submit" class="btn btn-primary">Simpan</button>
-                            <a href="<?php echo BASE_URL;?>/mapel" class="btn btn-secondary">Batal</a>
+                            <a href="<?php echo BASE_URL; ?>/mapel" class="btn btn-secondary">Batal</a>
                         </div>
                     </form>
                 </div>
@@ -54,5 +66,5 @@
 
 <?php
     $content = ob_get_clean();
-    require_once __DIR__ . '/../../layouts/main.php';
+require_once __DIR__ . '/../../layouts/main.php';
 ?>

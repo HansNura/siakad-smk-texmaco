@@ -37,6 +37,7 @@ class MapelController extends Controller
             'kode_mapel' => strtoupper($_POST['kode_mapel']),
             'nama_mapel' => $_POST['nama_mapel'],
             'kkm'        => $_POST['kkm'],
+            'kelompok'   => $_POST['kelompok'],
         ];
 
         // Validasi Simple
@@ -99,6 +100,7 @@ class MapelController extends Controller
             'kode_mapel' => strtoupper($_POST['kode_mapel']),
             'nama_mapel' => $_POST['nama_mapel'],
             'kkm'        => $_POST['kkm'],
+            'kelompok'   => $_POST['kelompok'],
         ];
 
         if (in_array('', $data)) {
