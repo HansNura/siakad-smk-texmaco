@@ -1,26 +1,5 @@
 <?php ob_start(); ?>
 
-
-<?php if (isset($_SESSION['flash']['success'])): ?>
-<div class="alert alert-success alert-dismissible fade show" role="alert">
-    <?php echo $_SESSION['flash']['success']; ?>
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-    </button>
-</div>
-<?php unset($_SESSION['flash']['success']); ?>
-<?php endif; ?>
-
-<?php if (isset($_SESSION['flash']['error'])): ?>
-<div class="alert alert-danger alert-dismissible fade show" role="alert">
-    <?php echo $_SESSION['flash']['error']; ?>
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-    </button>
-</div>
-<?php unset($_SESSION['flash']['error']); ?>
-<?php endif; ?>
-
 <div class="card">
     <div class="card-header">
         <h3 class="card-title">Daftar Siswa</h3>
@@ -35,16 +14,10 @@
             <thead>
                 <tr>
                     <th style="width: 10px">#</th>
-                    <th>id</th>
-                    <th>User Id</th>
-                    <th>Kelas Id</th>
-                    <th>NIS</th>
-                    <th>NISN</th>
+                    <th>Identitas (NIS/NISN)</th>
                     <th>Nama Lengkap</th>
-                    <th>Tanggal Lahir</th>
-                    <th>Alamat</th>
-                    <th>Username</th>
-                    <th>Role</th>
+                    <th>Kelas</th>
+                    <th>Status Akun</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
@@ -52,22 +25,18 @@
                 <?php $no = 1;foreach ($students as $student): ?>
                 <tr>
                     <td><?php echo $no++ ?></td>
-                    <td><?php echo $student['siswa_id'] ?></td>
-                    <td><?php echo $student['user_id'] ?></td>
-                    <td><?php echo $student['kelas_id'] ?></td>
-                    <td><?php echo $student['nis'] ?></td>
-                    <td><?php echo $student['nisn'] ?></td>
+                    <td><?php echo $student['nis'] ?> |<?php echo $student['nisn'] ?></td>
                     <td><?php echo $student['nama_lengkap'] ?></td>
-                    <td><?php echo $student['tanggal_lahir'] ?></td>
-                    <td><?php echo $student['alamat'] ?></td>
-                    <td><?php echo htmlspecialchars($student['username']) ?></td>
                     <td>
-                        <?php if ($student['role'] == 'Admin'): ?>
-                        <span class="badge bg-primary">Admin</span>
-                        <?php elseif ($student['role'] == 'Guru'): ?>
-                        <span class="badge bg-warning">Guru</span>
-                        <?php elseif ($student['role'] == 'Siswa'): ?>
-                        <span class="badge bg-info">Siswa</span>
+                        <span class="badge bg-info">
+                            <?php echo $student['nama_kelas'] ?? 'Tanpa Kelas' ?>
+                        </span>
+                    </td>
+                    <td>
+                        <?php if ($student['status_aktif'] === 1): ?>
+                        <span class="badge bg-success">Aktif</span>
+                        <?php elseif ($student['status_aktif'] === 0): ?>
+                        <span class="badge bg-danger">Tidak Aktif</span>
                         <?php endif; ?>
                     </td>
                     <td>

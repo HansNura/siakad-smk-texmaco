@@ -17,11 +17,6 @@
 
                         <div class="card-body">
 
-                            <?php if (isset($_SESSION['flash']['error'])): ?>
-                            <div class="alert alert-danger">
-                                <?php echo $_SESSION['flash']['error'];unset($_SESSION['flash']['error']); ?></div>
-                            <?php endif; ?>
-
                             <div class="form-group">
                                 <label for="tahun">Tahun Ajaran</label>
                                 <input type="text" class="form-control" id="tahun" name="tahun"

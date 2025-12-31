@@ -155,24 +155,42 @@ class GuruController extends Controller
 
     public function destroy()
     {
+        // 1. Cari ID
         $id = $_GET['id'] ?? null;
         if (! $id) {
             $this->redirect('guru')->with('error', 'ID tidak valid');
             exit;
         }
 
+        // 2. Cari data guru
         $guru = Guru::find($id);
+
+        // 3. Cek apakah guru ketemu di DB?
         if (! $guru) {
-            $this->redirect('guru')->with('error', 'Data tidak ditemukan');
+            $this->redirect('guru')->with('error', 'Data guru tidak ditemukan!');
             exit;
         }
 
-        $result = User::delete($guru['user_id']);
+        // 4. Hapus data Guru (Child) terlebih dahulu
+        $deleteResult = Guru::delete($id);
 
-        if ($result['status']) {
-            $this->redirect('guru')->with('success', 'Data Guru & Akun berhasil dihapus');
-        } else {
-            $this->redirect('guru')->with('error', 'Gagal hapus: ' . $result['error']);
+        // CEK STATUS
+        if ($deleteResult['status'] === false) {
+            $pesan = "Gagal menghapus data guru: " . $deleteResult['error'];
+            $this->redirect('guru')->with('error', $pesan);
+            die();
         }
+
+        // 5. Hapus data User (Parent)
+        $deleteResult = User::delete($guru['user_id']);
+
+        // CEK STATUS
+        if ($deleteResult['status'] === false) {
+            $pesan = "Gagal menghapus data user: " . $deleteResult['error'];
+            $this->redirect('guru')->with('error', $pesan);
+            die();
+        }
+
+        $this->redirect('guru')->with('success', 'Data Guru & Akun Login berhasil dihapus!');
     }
 }

@@ -16,12 +16,6 @@
                         <input type="hidden" name="kelas_id" value="<?php echo $data['kelas']['kelas_id']; ?>">
 
                         <div class="card-body">
-
-                            <?php if (isset($_SESSION['flash']['error'])): ?>
-                            <div class="alert alert-danger">
-                                <?php echo $_SESSION['flash']['error'];unset($_SESSION['flash']['error']); ?></div>
-                            <?php endif; ?>
-
                             <div class="form-group">
                                 <label for="tingkat">Tingkat</label>
                                 <select class="form-control" id="tingkat" name="tingkat" required>

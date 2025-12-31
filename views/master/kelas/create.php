@@ -12,12 +12,8 @@
                         <h3 class="card-title">Tambah Data Kelas</h3>
                     </div>
 
-                    <form action="<?php echo BASE_URL;?>/kelas/store" method="POST">
+                    <form action="<?php echo BASE_URL; ?>/kelas/store" method="POST">
                         <div class="card-body">
-
-                            <?php if (isset($_SESSION['flash']['error'])): ?>
-                                <div class="alert alert-danger"><?php echo $_SESSION['flash']['error'];unset($_SESSION['flash']['error']);?></div>
-                            <?php endif; ?>
 
                             <div class="form-group">
                                 <label for="tingkat">Tingkat</label>
@@ -31,12 +27,14 @@
 
                             <div class="form-group">
                                 <label for="jurusan">Jurusan</label>
-                                <input type="text" class="form-control" id="jurusan" name="jurusan" placeholder="Contoh: TKJ, RPL, AKL" required>
+                                <input type="text" class="form-control" id="jurusan" name="jurusan"
+                                    placeholder="Contoh: TKJ, RPL, AKL" required>
                             </div>
 
                             <div class="form-group">
                                 <label for="nama_kelas">Nama Kelas</label>
-                                <input type="text" class="form-control" id="nama_kelas" name="nama_kelas" placeholder="Contoh: X TKJ 1" required>
+                                <input type="text" class="form-control" id="nama_kelas" name="nama_kelas"
+                                    placeholder="Contoh: X TKJ 1" required>
                             </div>
 
                             <div class="form-group">
@@ -44,9 +42,10 @@
                                 <select class="form-control" id="guru_wali_id" name="guru_wali_id" required>
                                     <option value="">-- Pilih Wali Kelas --</option>
                                     <?php foreach ($data['gurus'] as $guru): ?>
-                                        <option value="<?php echo $guru['guru_id'];?>">
-                                            <?php echo htmlspecialchars($guru['nama_lengkap']);?> (NIP: <?php echo htmlspecialchars($guru['nip']);?>)
-                                        </option>
+                                    <option value="<?php echo $guru['guru_id']; ?>">
+                                        <?php echo htmlspecialchars($guru['nama_lengkap']); ?>
+                                        (NIP:<?php echo htmlspecialchars($guru['nip']); ?>)
+                                    </option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -56,10 +55,10 @@
                                 <select class="form-control" id="tahun_id" name="tahun_id" required>
                                     <option value="">-- Pilih Tahun Ajaran --</option>
                                     <?php foreach ($data['tahuns'] as $tahun): ?>
-                                        <option value="<?php echo $tahun['tahun_id'];?>">
-                                            <?php echo htmlspecialchars($tahun['tahun'] . ' - ' . $tahun['semester']);?>
-                                            <?php echo $tahun['is_active'] ? '(Aktif)' : '';?>
-                                        </option>
+                                    <option value="<?php echo $tahun['tahun_id']; ?>">
+                                        <?php echo htmlspecialchars($tahun['tahun'] . ' - ' . $tahun['semester']); ?>
+                                        <?php echo $tahun['is_active'] ? '(Aktif)' : ''; ?>
+                                    </option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -68,7 +67,7 @@
 
                         <div class="card-footer">
                             <button type="submit" class="btn btn-primary">Simpan</button>
-                            <a href="<?php echo BASE_URL;?>/kelas" class="btn btn-secondary">Batal</a>
+                            <a href="<?php echo BASE_URL; ?>/kelas" class="btn btn-secondary">Batal</a>
                         </div>
                     </form>
                 </div>

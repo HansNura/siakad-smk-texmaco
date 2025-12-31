@@ -1,9 +1,5 @@
 <?php ob_start(); ?>
 
-<?php if (isset($_SESSION['flash']['success'])): ?>
-<div class="alert alert-success"><?php echo $_SESSION['flash']['success'];unset($_SESSION['flash']['success']); ?></div>
-<?php endif; ?>
-
 <div class="card">
     <div class="card-header">
         <h3 class="card-title">Daftar Akun Pengguna</h3>
@@ -18,6 +14,7 @@
             <thead>
                 <tr>
                     <th style="width: 10px">#</th>
+
                     <th>Username</th>
                     <th>Role (Peran)</th>
                     <th>Aksi</th>

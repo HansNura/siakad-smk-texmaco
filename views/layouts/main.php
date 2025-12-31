@@ -43,9 +43,14 @@
     <!--end::Required Plugin(AdminLTE)-->
 </head>
 <!--end::Head-->
+
 <!--begin::Body-->
 
 <body class="sidebar-expand-lg sidebar-open bg-body-tertiary">
+    <!--begin::Flash Message-->
+    <?php require_once __DIR__ . '/../partials/flash.php'; ?>
+    <!--end::Flash Message-->
+
     <!--begin::App Wrapper-->
     <div class="app-wrapper">
         <!--begin::Header-->

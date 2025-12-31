@@ -3,26 +3,6 @@
     ob_start();
 ?>
 
-<?php if (isset($_SESSION['flash']['success'])): ?>
-<div class="alert alert-success alert-dismissible fade show" role="alert">
-    <?php echo $_SESSION['flash']['success']; ?>
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-    </button>
-</div>
-<?php unset($_SESSION['flash']['success']); ?>
-<?php endif; ?>
-
-<?php if (isset($_SESSION['flash']['error'])): ?>
-<div class="alert alert-danger alert-dismissible fade show" role="alert">
-    <?php echo $_SESSION['flash']['error']; ?>
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-    </button>
-</div>
-<?php unset($_SESSION['flash']['error']); ?>
-<?php endif; ?>
-
 <div class="card">
     <div class="card-header">
         <h3 class="card-title">Data Tahun Ajaran</h3>

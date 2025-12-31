@@ -15,11 +15,6 @@
                     <form action="<?php echo BASE_URL; ?>/mapel/store" method="POST">
                         <div class="card-body">
 
-                            <?php if (isset($_SESSION['flash']['error'])): ?>
-                            <div class="alert alert-danger">
-                                <?php echo $_SESSION['flash']['error'];unset($_SESSION['flash']['error']); ?></div>
-                            <?php endif; ?>
-
                             <div class="form-group">
                                 <label for="kode_mapel">Kode Mapel</label>
                                 <input type="text" class="form-control" id="kode_mapel" name="kode_mapel"

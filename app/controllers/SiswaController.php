@@ -5,6 +5,7 @@ require_once __DIR__ . '/../Models/Siswa.php';
 require_once __DIR__ . '/../Models/User.php';
 require_once __DIR__ . '/Controller.php';
 
+use App\Models\Kelas;
 use App\Models\Siswa;
 use App\Models\User;
 
@@ -23,21 +24,24 @@ class SiswaController extends Controller
     {
         $data = [
             'title'    => 'Master Data Siswa',
-            'students' => Siswa::getAllWithUser(),
+            'students' => Siswa::getAllWithRelasi(),
         ];
         $this->view('master/siswa/index', $data);
     }
 
     public function create()
     {
-        $data = ['title' => 'Tambah Siswa Baru'];
-        $this->view('master/siswa/create', $data);
+        $this->view('master/siswa/create', [
+            'title' => 'Tambah Siswa Baru',
+            'kelas' => Kelas::getAll(),
+        ]);
     }
 
     public function store()
     {
         // 1. Ambil Data
         $data = [
+            'kelas_id'      => $_POST['kelas_id'],
             'nis'           => $_POST['nis'],
             'nisn'          => $_POST['nisn'],
             'nama_lengkap'  => $_POST['nama_lengkap'],
@@ -51,7 +55,29 @@ class SiswaController extends Controller
             exit;
         }
 
-        // 3. Buat User
+        // 3. Cek NIS
+        $existing = Siswa::where('nis', $data['nis'])->first();
+        if ($existing) {
+            $this->redirect('siswa/create')->with('error', 'NIS ' . $data['nis'] . ' sudah ada!');
+            exit;
+        }
+
+        // 4. Cek NISN
+        $existing = Siswa::where('nisn', $data['nisn'])->first();
+        if ($existing) {
+            $this->redirect('siswa/create')->with('error', 'NISN ' . $data['nisn'] . ' sudah ada!');
+            exit;
+        }
+
+        // 5. Cek kelas
+        $kelas = Kelas::find($data['kelas_id']);
+        if (! $kelas) {
+            $this->redirect('siswa/create')->with('error', 'Kelas tidak ditemukan!');
+            exit;
+        }
+
+        // Mulai Ke Database
+        // 6. Buat User
         $userResult = User::create([
             'username' => $data['nis'],
             'password' => password_hash($data['nis'], PASSWORD_DEFAULT),
@@ -66,16 +92,10 @@ class SiswaController extends Controller
             die();
         }
 
-        // 4. Buat Siswa (Pakai ID dari result user)
-        $siswaResult = Siswa::create([
-            'kelas_id'      => 1,
-            'nis'           => $data['nis'],
-            'nisn'          => $data['nisn'],
-            'nama_lengkap'  => $data['nama_lengkap'],
-            'tanggal_lahir' => $data['tanggal_lahir'],
-            'alamat'        => $data['alamat'],
-            'user_id'       => $userResult['lastInsertId'], // <--- AMAN & JELAS
-        ]);
+        $data['user_id'] = $userResult['lastInsertId'];
+
+        // 7. Buat Siswa (Pakai ID dari result user)
+        $siswaResult = Siswa::create($data);
 
         if ($siswaResult['status'] === false) {
             User::delete($userResult['lastInsertId']);
@@ -112,6 +132,7 @@ class SiswaController extends Controller
         $data = [
             'title'   => 'Edit Siswa',
             'student' => $student,
+            'kelas'   => Kelas::getAll(),
         ];
         $this->view('master/siswa/edit', $data);
     }
@@ -127,8 +148,10 @@ class SiswaController extends Controller
             die();
         }
 
+        // Mulai Ke Database
         // 3. Ambil Data dari form
-        $dataSiswa = [
+        $data = [
+            'kelas_id'      => $_POST['kelas_id'],
             'nis'           => $_POST['nis'],
             'nisn'          => $_POST['nisn'],
             'nama_lengkap'  => $_POST['nama_lengkap'],
@@ -137,13 +160,20 @@ class SiswaController extends Controller
         ];
 
         // 4. Validasi Simple
-        if (in_array('', $dataSiswa)) {
+        if (in_array('', $data)) {
             $this->redirect('siswa/edit?id=' . $id)->with('error', 'Semua data wajib diisi!');
             die();
         }
 
-        // 5. Eksekusi Update ke Tabel Siswa Saja
-        $updateResult = Siswa::update($id, $dataSiswa);
+        // 5. Cek kelas
+        $kelas = Kelas::find($data['kelas_id']);
+        if (! $kelas) {
+            $this->redirect('siswa/edit?id=' . $id)->with('error', 'Kelas tidak ditemukan!');
+            exit;
+        }
+
+        // 6. Eksekusi Update ke Tabel Siswa Saja
+        $updateResult = Siswa::update($id, $data);
 
         // CEK STATUS
         if ($updateResult['status'] === false) {
@@ -153,23 +183,26 @@ class SiswaController extends Controller
             die();
         }
 
-        // 6. Selesai!
+        // 7. Selesai!
         $this->redirect('siswa')->with('success', 'Data siswa berhasil diperbarui!');
     }
 
     public function destroy()
     {
+                                   // 1. Ambil ID dari URL (?id=1) secara manual
+                                   // Kita pakai operator '?? null' agar tidak error jika id tidak ada
         $id = $_GET['id'] ?? null; // ini adalah siswa_id
 
-        // 1. Cari data siswa dulu untuk dapat user_id
+        // 2. Cari data siswa dulu untuk dapat user_id
         $student = Siswa::find($id);
 
+        // 3. Cek apakah siswanya ketemu di DB?
         if (! $student) {
             $this->redirect('siswa')->with('error', 'Data siswa tidak ditemukan!');
             exit;
         }
 
-        // 2. Hapus data Siswa (Child) terlebih dahulu
+        // 4. Hapus data Siswa (Child) terlebih dahulu
         $deleteResult = Siswa::delete($id);
 
         // CEK STATUS
@@ -179,8 +212,8 @@ class SiswaController extends Controller
             die();
         }
 
-        // 3. Hapus data User (Parent)
-        $deleteResult = User::delete($student);
+        // 5. Hapus data User (Parent)
+        $deleteResult = User::delete($student['user_id']);
 
         // CEK STATUS
         if ($deleteResult['status'] === false) {

@@ -13,10 +13,6 @@
             <input type="hidden" name="guru_id" value="<?php echo $data['guru']['guru_id']; ?>">
 
             <div class="card-body">
-                <?php if (isset($_SESSION['flash']['error'])): ?>
-                <div class="alert alert-danger">
-                    <?php echo $_SESSION['flash']['error'];unset($_SESSION['flash']['error']); ?></div>
-                <?php endif; ?>
 
                 <div class="form-group">
                     <label for="nip">NIP</label>

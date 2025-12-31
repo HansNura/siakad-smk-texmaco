@@ -9,11 +9,6 @@
         <form action="<?php echo BASE_URL ?>/users/store" method="post">
             <div class="card-body">
 
-                <?php if (isset($_SESSION['flash']['error'])): ?>
-                <div class="alert alert-danger">
-                    <?php echo $_SESSION['flash']['error'];unset($_SESSION['flash']['error']); ?>
-                </div>
-                <?php endif; ?>
 
                 <div class="form-group">
                     <label>Username</label>

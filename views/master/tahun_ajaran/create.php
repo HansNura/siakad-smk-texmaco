@@ -12,12 +12,8 @@
                         <h3 class="card-title">Tambah Tahun Ajaran</h3>
                     </div>
 
-                    <form action="<?php echo BASE_URL;?>/tahun-ajaran/store" method="POST">
+                    <form action="<?php echo BASE_URL; ?>/tahun-ajaran/store" method="POST">
                         <div class="card-body">
-
-                            <?php if (isset($_SESSION['flash']['error'])): ?>
-                                <div class="alert alert-danger"><?php echo $_SESSION['flash']['error'];unset($_SESSION['flash']['error']);?></div>
-                            <?php endif; ?>
 
                             <div class="form-group">
                                 <label for="tahun">Tahun Ajaran</label>
@@ -41,7 +37,7 @@
 
                         <div class="card-footer">
                             <button type="submit" class="btn btn-primary">Simpan</button>
-                            <a href="<?php echo BASE_URL;?>/tahun-ajaran" class="btn btn-secondary">Batal</a>
+                            <a href="<?php echo BASE_URL; ?>/tahun-ajaran" class="btn btn-secondary">Batal</a>
                         </div>
                     </form>
                 </div>

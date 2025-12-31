@@ -1,8 +1,5 @@
 <?php ob_start(); ?>
 
-<?php if (isset($_SESSION['flash']['success'])): ?>
-<div class="alert alert-success"><?php echo $_SESSION['flash']['success'];unset($_SESSION['flash']['success']); ?></div>
-<?php endif; ?>
 <section class="content">
     <div class="card card-warning">
         <div class="card-header">
@@ -12,10 +9,6 @@
         <form action="<?php echo BASE_URL ?>/users/update" method="post">
             <input type="hidden" name="user_id" value="<?php echo $user['user_id'] ?>">
             <div class="card-body">
-                <?php if (isset($_SESSION['flash']['error'])): ?>
-                <div class="alert alert-danger">
-                    <?php echo $_SESSION['flash']['error'];unset($_SESSION['flash']['error']); ?></div>
-                <?php endif; ?>
 
                 <div class="form-group">
                     <label>Username</label>

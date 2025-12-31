@@ -11,11 +11,6 @@
             <input type="hidden" name="user_id" value="<?php echo $student['user_id'] ?>">
             <div class="card-body">
 
-                <?php if (isset($_SESSION['flash']['error'])): ?>
-                <div class="alert alert-danger">
-                    <?php echo $_SESSION['flash']['error'];unset($_SESSION['flash']['error']); ?>
-                </div>
-                <?php endif; ?>
 
                 <div class="form-group">
                     <label>NIS</label>
@@ -46,6 +41,18 @@
                     <label>Alamat</label>
                     <textarea class="form-control" rows="3" placeholder="Enter ..."
                         name="alamat"><?php echo $student['alamat'] ?></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Kelas</label>
+                    <select name="kelas_id" class="form-control" required>
+                        <option value="" disabled selected>Pilih Kelas</option>
+                        <?php foreach ($kelas as $k): ?>
+                        <option value="<?php echo $k['kelas_id'] ?>"
+                            <?php if ($k['kelas_id'] == $student['kelas_id']): ?>selected<?php endif; ?>>
+                            <?php echo $k['nama_kelas'] ?></option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
 
             </div>

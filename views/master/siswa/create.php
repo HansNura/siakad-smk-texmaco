@@ -9,35 +9,38 @@
         <form action="<?php echo BASE_URL ?>/siswa/store" method="post">
             <div class="card-body">
 
-                <?php if (isset($_SESSION['flash']['error'])): ?>
-                <div class="alert alert-danger">
-                    <?php echo $_SESSION['flash']['error'];unset($_SESSION['flash']['error']); ?>
-                </div>
-                <?php endif; ?>
-
                 <div class="form-group">
                     <label>NIS</label>
-                    <input type="text" name="nis" class="form-control" placeholder="Masukkan nis unik" required>
+                    <input type="text" name="nis" class="form-control" placeholder="Masukkan nis unik">
                 </div>
                 <div class="form-group">
                     <label>NISN</label>
-                    <input type="text" name="nisn" class="form-control" placeholder="Masukkan nisn unik" required>
+                    <input type="text" name="nisn" class="form-control" placeholder="Masukkan nisn unik">
                 </div>
 
                 <div class="form-group">
                     <label>Nama Lengkap</label>
-                    <input type="text" name="nama_lengkap" class="form-control" placeholder="Masukkan Nama Lengkap"
-                        required>
+                    <input type="text" name="nama_lengkap" class="form-control" placeholder="Masukkan Nama Lengkap">
                 </div>
 
                 <div class="form-group">
                     <label>Tanggal Lahir</label>
-                    <input type="date" name="tanggal_lahir" class="form-control" required>
+                    <input type="date" name="tanggal_lahir" class="form-control">
                 </div>
 
                 <div class="form-group">
                     <label>Alamat</label>
                     <textarea class="form-control" rows="3" placeholder="Enter ..." name="alamat"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Kelas</label>
+                    <select name="kelas_id" class="form-control">
+                        <option value="" disabled selected>Pilih Kelas</option>
+                        <?php foreach ($kelas as $k): ?>
+                        <option value="<?php echo $k['kelas_id'] ?>"><?php echo $k['nama_kelas'] ?></option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
 
             </div>
