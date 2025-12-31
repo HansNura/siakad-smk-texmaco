@@ -6,6 +6,7 @@ use App\Controllers\HomeController;
 use App\Controllers\JadwalController;
 use App\Controllers\KelasController;
 use App\Controllers\MapelController;
+use App\Controllers\PlottingController;
 use App\Controllers\SiswaController;
 use App\Controllers\TahunAjaranController;
 use App\Controllers\UserController;
@@ -77,5 +78,11 @@ $routes->post('/jadwal/store', [JadwalController::class, 'store'], 'authMiddlewa
 $routes->get('/jadwal/edit', [JadwalController::class, 'edit'], 'authMiddleware');
 $routes->post('/jadwal/update', [JadwalController::class, 'update'], 'authMiddleware');
 $routes->get('/jadwal/delete', [JadwalController::class, 'destroy'], 'authMiddleware');
+
+// PLOTTING SISWA (ROMBEL)
+$routes->get('/plotting', [PlottingController::class, 'index'], 'authMiddleware');
+$routes->get('/plotting/manage', [PlottingController::class, 'manage'], 'authMiddleware');
+$routes->post('/plotting/add', [PlottingController::class, 'add'], 'authMiddleware');
+$routes->post('/plotting/remove', [PlottingController::class, 'remove'], 'authMiddleware');
 
 return $routes;

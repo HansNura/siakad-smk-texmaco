@@ -1,5 +1,4 @@
 <?php
-    // views/akademik/jadwal/index.php
     ob_start();
 ?>
 

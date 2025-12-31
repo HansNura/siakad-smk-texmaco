@@ -244,6 +244,30 @@
             </ul>
         </li>
 
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon bi bi-mortarboard"></i>
+                <p>
+                    Akademik
+                    <i class="nav-arrow bi bi-chevron-right"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="<?php echo BASE_URL ?>/jadwal" class="nav-link">
+                        <i class="nav-icon bi bi-calendar3"></i>
+                        <p>Jadwal Pelajaran</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="<?php echo BASE_URL ?>/plotting" class="nav-link">
+                        <i class="nav-icon bi bi-people-fill"></i>
+                        <p>Plotting Siswa</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
         <li class="nav-header">EXAMPLES</li>
         <li class="nav-item">
             <a href="#" class="nav-link">

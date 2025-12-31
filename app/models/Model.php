@@ -152,11 +152,9 @@ class Model
             $stmt = $instance->conn->prepare($query);
             $stmt->execute($data);
 
-            $lastInsertId = $instance->conn->lastInsertId();
             $instance->conn->commit();
 
-            $instance->response['status']       = true;
-            $instance->response['lastInsertId'] = $lastInsertId;
+            $instance->response['status'] = true;
 
             return $instance->response;
         } catch (PDOException $e) {

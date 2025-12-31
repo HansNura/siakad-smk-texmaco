@@ -63,6 +63,11 @@ https://github.com/HelgiNA/siakad-smk-texmaco.git
 │   │       └── ...
 │   │
 │   ├── akademik/               <-- Area Operasional (Guru & Wali Kelas)
+│   │   ├── plotting/
+│   │   │   ├── manage.php      <-- (SIA-000) Kelola Rombel
+│   │   │   ├── add.php         <-- (SIA-000) Tambahkan Siswa ke Rombel
+│   │   │   └── remove.php      <-- (SIA-000) Keluarkan Siswa dari Rombel
+│   │   │
 │   │   ├── absensi/
 │   │   │   ├── input.php       <-- (SIA-004) Guru input absen
 │   │   │   └── validasi.php    <-- (SIA-005) Wali Kelas validasi absen
