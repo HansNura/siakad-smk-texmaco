@@ -223,6 +223,12 @@
                         <p>Data Guru</p>
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a href="<?php echo BASE_URL ?>/tahun-ajaran" class="nav-link">
+                        <i class="nav-icon bi bi-calendar-event"></i>
+                        <p>Tahun Ajaran</p>
+                    </a>
+                </li>
             </ul>
         </li>
 

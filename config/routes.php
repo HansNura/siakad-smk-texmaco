@@ -4,6 +4,7 @@ use App\Controllers\AuthController;
 use App\Controllers\GuruController;
 use App\Controllers\HomeController;
 use App\Controllers\SiswaController;
+use App\Controllers\TahunAjaranController;
 use App\Controllers\UserController;
 use App\Core\Route;
 
@@ -39,5 +40,14 @@ $routes->post('/guru/store', [GuruController::class, 'store'], 'authMiddleware')
 $routes->get('/guru/edit', [GuruController::class, 'edit'], 'authMiddleware');      // NEW
 $routes->post('/guru/update', [GuruController::class, 'update'], 'authMiddleware'); // NEW
 $routes->get('/guru/delete', [GuruController::class, 'destroy'], 'authMiddleware'); // NEW
+
+// MANAJEMEN TAHUN AJARAN
+$routes->get('/tahun-ajaran', [TahunAjaranController::class, 'index'], 'authMiddleware');
+$routes->get('/tahun-ajaran/create', [TahunAjaranController::class, 'create'], 'authMiddleware');
+$routes->post('/tahun-ajaran/store', [TahunAjaranController::class, 'store'], 'authMiddleware');
+$routes->get('/tahun-ajaran/edit', [TahunAjaranController::class, 'edit'], 'authMiddleware');
+$routes->post('/tahun-ajaran/update', [TahunAjaranController::class, 'update'], 'authMiddleware');
+$routes->get('/tahun-ajaran/activate', [TahunAjaranController::class, 'activate'], 'authMiddleware');
+$routes->get('/tahun-ajaran/delete', [TahunAjaranController::class, 'destroy'], 'authMiddleware');
 
 return $routes;

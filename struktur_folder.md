@@ -2,6 +2,10 @@
 
 ### Struktur folder ini dirancang untuk memudahkan pengembangan web dengan pendekatan MVC (Model-View-Controller). Setiap komponen memiliki tujuan spesifik:
 
+### Repository
+
+https://github.com/HelgiNA/siakad-smk-texmaco.git
+
 ```
 /siakad-texmaco/
 ├── app/

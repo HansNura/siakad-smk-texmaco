@@ -1,57 +1,63 @@
-**TUGAS: Implementasi Full Stack Master Data Guru (One-to-One User Relation)**
+**TUGAS: Implementasi Master Data Tahun Ajaran (Logic: Single Active Semester)**
 
 **Konteks:**
-Kita perlu membuat manajemen data Guru. Karena setiap Guru wajib bisa login, maka setiap pembuatan data Guru **HARUS** otomatis membuat akun di tabel `users` dalam satu transaksi database (Atomic Operation).
+Sistem membutuhkan pengaturan periode akademik (Tahun Ajaran & Semester). Aturan bisnis **KRUSIAL**: Hanya boleh ada **SATU** tahun ajaran yang statusnya `is_active = 1` pada satu waktu. Mengaktifkan satu periode harus otomatis menonaktifkan periode lainnya.
 
 **Instruksi Eksekusi:**
 
-1. **Database & Model (`app/models/Guru.php`):**
+1. **Database & Model (`app/models/TahunAjaran.php`):**
 
--   Eksekusi SQL berikut untuk membuat tabel:
+-   **SQL:** Eksekusi query berikut untuk reset/buat tabel:
 
 ```sql
-CREATE TABLE guru (
-    guru_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL UNIQUE,
-    nip VARCHAR(20) NOT NULL UNIQUE,
-    nama_lengkap VARCHAR(100) NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+DROP TABLE IF EXISTS `tahun_ajaran`;
+CREATE TABLE `tahun_ajaran`  (
+  `tahun_id` int(11) NOT NULL AUTO_INCREMENT,
+  `tahun` varchar(20) NOT NULL COMMENT 'Contoh: 2024/2025',
+  `semester` enum('Ganjil','Genap') NOT NULL,
+  `is_active` tinyint(1) NULL DEFAULT 0,
+  PRIMARY KEY (`tahun_id`)
+) ENGINE = InnoDB;
 
 ```
 
--   Buat Model `Guru` (extending `Model`). Tambahkan method `getAllWithUser()` yang melakukan `JOIN` ke tabel `users` untuk mengambil username/role.
+-   **Model Logic:**
+-   Method `activateSemester($id)`: Gunakan Transaction.
 
-2. **Controller (`app/controllers/GuruController.php`):**
+1. `UPDATE tahun_ajaran SET is_active = 0` (Reset semua).
+2. `UPDATE tahun_ajaran SET is_active = 1 WHERE tahun_id = :id` (Set yang dipilih).
 
--   **Security:** Pastikan hanya role 'admin' yang bisa akses (cek di `__construct`).
--   **Method `store()` (CRITICAL):**
--   Gunakan `Database::beginTransaction()`.
--   _Step 1:_ Insert ke tabel `users` (Username = NIP, Password = Hash(NIP), Role = 'guru').
--   _Step 2:_ Ambil `lastInsertId()` sebagai `user_id`.
--   _Step 3:_ Insert ke tabel `guru` (`user_id`, `nip`, `nama_lengkap`).
--   _Commit_ jika sukses, _Rollback_ jika ada error.
+-   Method `getActive()`: Ambil satu baris data dengan `WHERE is_active = 1`.
 
--   **Method `update()`:** Update data `nip` dan `nama_lengkap`. Opsional: update username di tabel `users` jika NIP berubah.
--   **Method `destroy($id)`:** Hapus data via Model `User` (berdasarkan `user_id` yang terasosiasi). Biarkan `ON DELETE CASCADE` di database menangani penghapusan data di tabel `guru`.
+2. **Controller (`app/controllers/TahunAjaranController.php`):**
 
-3. **Views (`views/master/guru/`):**
+-   **Auth:** Pastikan hanya admin yang bisa akses.
+-   **CRUD Standar:** `index`, `create`, `store`, `edit`, `update`, `destroy`.
+-   **Method `activate($id)`:**
+-   Panggil method `activateSemester($id)` di Model.
+-   Redirect kembali ke index dengan Flash Message "Tahun Ajaran Aktif Berhasil Diubah".
 
--   Buat folder dan file: `index.php`, `create.php`, `edit.php`.
--   **Style:** Gunakan template AdminLTE yang sudah ada (copy struktur dari `views/user/` atau `views/product/`).
--   **Index:** Tampilkan tabel (No, NIP, Nama Lengkap, Username).
+3. **Views (`views/master/tahun_ajaran/`):**
+
+-   **`index.php`:**
+-   Tampilkan tabel: No, Tahun (2024/2025), Semester, Status, Aksi.
+-   **Kolom Status:** Jika `is_active == 1`, tampilkan Badge Hijau "AKTIF". Jika `0`, tampilkan Badge Abu "Non-Aktif".
+-   **Tombol Aksi:** Jika status "Non-Aktif", munculkan tombol/link "Aktifkan" yang mengarah ke route activate.
+
+-   **`create.php` & `edit.php`:**
+-   Input `tahun`: Text (Placeholder: 2024/2025).
+-   Input `semester`: Select Option (Ganjil/Genap).
 
 4. **Routing (`config/routes.php`):**
 
--   Daftarkan route: `/guru` (index), `/guru/create`, `/guru/store` (POST), `/guru/edit`, `/guru/update` (POST), `/guru/delete`.
--   Pastikan route dilindungi middleware auth.
+-   Daftarkan group route `/tahun-ajaran`.
+-   Route khusus: `GET /tahun-ajaran/activate/{id}` (atau gunakan query string `/tahun-ajaran/activate?id=...` sesuai gaya router Anda).
 
 === CAKUPAN PEKERJAAN ===
-Agent harus menyelesaikan file-file berikut:
+Agent harus menyelesaikan:
 
-1. **Database:** Eksekusi Query pembuatan tabel `guru`.
-2. **Model:** `app/models/Guru.php`
-3. **Controller:** `app/controllers/GuruController.php`
-4. **Views:** `views/master/guru/` (index, create, edit).
+1. **Database:** Eksekusi tabel `tahun_ajaran`.
+2. **Model:** `app/models/TahunAjaran.php` (Fokus logic reset & set active).
+3. **Controller:** `app/controllers/TahunAjaranController.php`.
+4. **Views:** `views/master/tahun_ajaran/` (index, create, edit).
 5. **Config:** Update `config/routes.php`.
-6. **Navbar:** Tambahkan menu "Data Guru" di `views/components/navbar.php` (atau sidebar).

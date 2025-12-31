@@ -166,7 +166,7 @@ DROP TABLE IF EXISTS `kelas`;
 CREATE TABLE `kelas`  (
   `kelas_id` int(11) NOT NULL AUTO_INCREMENT,
   `guru_wali_id` int(11) NOT NULL,
-  `tahun_id` int(11) NOT NULL,
+  `tahun_id` int(11) NOT NULL COMMENT 'Contoh: 2023/2024 Ganjil', 
   `nama_kelas` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_uca1400_ai_ci NOT NULL COMMENT 'Contoh: X-IPA-1',
   `tingkat` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_uca1400_ai_ci NOT NULL COMMENT 'Contoh: 10, 11, 12',
   `jurusan` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_uca1400_ai_ci NOT NULL COMMENT 'Contoh: IPA, IPS',
