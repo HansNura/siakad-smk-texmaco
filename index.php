@@ -14,6 +14,7 @@ require_once 'app/Controllers/UserController.php';
 require_once 'app/Controllers/SiswaController.php';
 require_once 'app/Controllers/GuruController.php';
 require_once 'app/Controllers/TahunAjaranController.php';
+require_once 'app/Controllers/KelasController.php';
 
 $routes = require_once 'config/routes.php';
 

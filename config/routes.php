@@ -3,6 +3,7 @@
 use App\Controllers\AuthController;
 use App\Controllers\GuruController;
 use App\Controllers\HomeController;
+use App\Controllers\KelasController;
 use App\Controllers\SiswaController;
 use App\Controllers\TahunAjaranController;
 use App\Controllers\UserController;
@@ -26,6 +27,7 @@ $routes->get('/users/edit', [UserController::class, 'edit'], 'authMiddleware');
 $routes->post('/users/update', [UserController::class, 'update'], 'authMiddleware');
 $routes->get('/users/delete', [UserController::class, 'destroy'], 'authMiddleware');
 
+// MANAJEMEN SISWA
 $routes->get('/siswa', [SiswaController::class, 'index'], 'authMiddleware');
 $routes->get('/siswa/create', [SiswaController::class, 'create', 'authMiddleware']);
 $routes->post('/siswa/store', [SiswaController::class, 'store'], 'authMiddleware');
@@ -49,5 +51,13 @@ $routes->get('/tahun-ajaran/edit', [TahunAjaranController::class, 'edit'], 'auth
 $routes->post('/tahun-ajaran/update', [TahunAjaranController::class, 'update'], 'authMiddleware');
 $routes->get('/tahun-ajaran/activate', [TahunAjaranController::class, 'activate'], 'authMiddleware');
 $routes->get('/tahun-ajaran/delete', [TahunAjaranController::class, 'destroy'], 'authMiddleware');
+
+// MANAJEMEN KELAS
+$routes->get('/kelas', [KelasController::class, 'index'], 'authMiddleware');
+$routes->get('/kelas/create', [KelasController::class, 'create'], 'authMiddleware');
+$routes->post('/kelas/store', [KelasController::class, 'store'], 'authMiddleware');
+$routes->get('/kelas/edit', [KelasController::class, 'edit'], 'authMiddleware');
+$routes->post('/kelas/update', [KelasController::class, 'update'], 'authMiddleware');
+$routes->get('/kelas/delete', [KelasController::class, 'destroy'], 'authMiddleware');
 
 return $routes;
