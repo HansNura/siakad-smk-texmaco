@@ -21,11 +21,9 @@ class UserController extends Controller
     // MENAMPILKAN SEMUA USER
     public function index()
     {
-        $users = User::getAll();
-
         $data = [
             'title' => 'Manajemen User',
-            'users' => $users,
+            'users' => User::getAll(),
         ];
 
         $this->view('user/index', $data);
@@ -41,26 +39,32 @@ class UserController extends Controller
     // MENYIMPAN DATA USER BARU
     public function store()
     {
-        $username = $_POST['username'];
-        $password = $_POST['password'];
-        $role     = $_POST['role'];
+        // 1. Ambil Data dari Form
+        $data = [
+            'username' => $_POST['username'],
+            'password' => $_POST['password'],
+            'role'     => $_POST['role'],
+        ];
 
-        if (empty($username) || empty($password) || empty($role)) {
+        // 2. Validasi Simple
+        if (in_array('', $data)) {
             $this->redirect('users/create')->with('error', 'Semua kolom wajib diisi!');
             exit;
         }
 
-        $hash = password_hash($password, PASSWORD_DEFAULT);
+        $hash = password_hash($data['password'], PASSWORD_DEFAULT);
 
-        $data = [
-            'username' => $username,
-            'password' => $hash,
-            'role'     => $role,
-        ];
+        $data['password'] = $hash;
 
-        if (! User::create($data)) {
-            $this->redirect('users/create')->with('error', 'Gagal menambahkan user');
-            exit;
+        // 3. Buat User
+        $userResult = User::create($data);
+
+        // CEK STATUS
+        if ($userResult['status'] === false) {
+            // Kita bisa cek apakah errornya karena duplikat?
+            $pesan = "Gagal membuat akun user: " . $userResult['error'];
+            $this->redirect('users/create')->with('error', $pesan);
+            die();
         }
 
         $this->redirect('users')->with('success', 'User berhasil ditambahkan');
@@ -69,15 +73,20 @@ class UserController extends Controller
     // MENAMPILKAN FORM EDIT
     public function edit()
     {
+        // 1. Ambil ID dari URL (?id=1) secara manual
+        // Kita pakai operator '?? null' agar tidak error jika id tidak ada
         $id = $_GET['id'] ?? null;
 
+        // 2. Validasi sederhana
         if (! $id) {
-            $this->redirect('users');
+            $this->redirect('users')->with('error', 'ID User tidak ditemukan!');
             exit;
         }
 
+        // 3. Panggil Model
         $user = User::find($id);
 
+        // 4. Cek apakah user ketemu di DB?
         if (! $user) {
             $this->redirect('users')->with('error', 'User tidak ditemukan');
             exit;
@@ -94,26 +103,39 @@ class UserController extends Controller
     // PROSES UPDATE KE DATABASE
     public function update()
     {
-        $id   = $_POST['user_id'];
+        // 1. Ambil ID
+        $id = $_POST['user_id'] ?? null;
+
+        // 2. Validasi sederhana
+        if (! $id) {
+            $this->redirect('users')->with('error', 'ID User tidak ditemukan!');
+            die();
+        }
+
+        // 3. Ambil Data
         $data = [
             'username' => $_POST['username'],
             'role'     => $_POST['role'],
         ];
 
-        if (empty($data['username']) || empty($data['role'])) {
-            $this->redirect('users/edit?id=' . $id)->with('error', 'Username dan role wajib diisi!');
-            exit;
+        // 4. Validasi Simple
+        if (in_array('', $data)) {
+            $this->redirect('users/edit?id=' . $id)->with('error', 'Semua data wajib diisi!');
+            die();
         }
 
+        // 5. Update Password Jika Ada
         if (! empty($_POST['password'])) {
             $data['password'] = password_hash($_POST['password'], PASSWORD_DEFAULT);
         }
 
+        // 6. Update User
         if (! User::update($id, $data)) {
             $this->redirect('users/edit?id=' . $id)->with('error', 'Gagal memperbarui user');
-            exit;
+            die();
         }
 
+        // 7. Redirect
         $this->redirect('users')->with('success', 'Data user berhasil diperbarui');
     }
 
@@ -122,17 +144,29 @@ class UserController extends Controller
     {
         $id = $_GET['id'] ?? null;
 
-        // Cegah Admin menghapus dirinya sendiri
+        // 1. Cek ID
+        if (! $id) {
+            $this->redirect('users')->with('error', 'ID User tidak ditemukan!');
+            exit;
+        }
+
+        // 2. Cek Admin
         if ($id == $_SESSION['user_id']) {
             $this->redirect('users')->with('error', 'Anda tidak bisa menghapus akun sendiri!');
             exit;
         }
 
-        if (! User::delete($id)) {
-            $this->redirect('users')->with('error', 'Gagal menghapus user');
-            exit;
+        // 3. Hapus User
+        $deleteResult = User::delete($id);
+
+        // CEK STATUS
+        if ($deleteResult['status'] === false) {
+            $pesan = "Gagal menghapus data user: " . $deleteResult['error'];
+            $this->redirect('users')->with('error', $pesan);
+            die();
         }
 
+        // 4. Redirect
         $this->redirect('users')->with('success', 'User berhasil dihapus');
     }
 }

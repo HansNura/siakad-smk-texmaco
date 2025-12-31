@@ -121,12 +121,13 @@ class SiswaController extends Controller
         // 1. Ambil ID (Wajib ada)
         $id = $_POST['id'] ?? null;
 
+        // 2. Validasi sederhana
         if (! $id) {
             $this->redirect('siswa')->with('error', 'ID Siswa tidak ditemukan!');
             die();
         }
 
-        // 2. Ambil Data
+        // 3. Ambil Data dari form
         $dataSiswa = [
             'nis'           => $_POST['nis'],
             'nisn'          => $_POST['nisn'],
@@ -135,13 +136,13 @@ class SiswaController extends Controller
             'alamat'        => $_POST['alamat'],
         ];
 
-        // 3. Validasi Simple
+        // 4. Validasi Simple
         if (in_array('', $dataSiswa)) {
             $this->redirect('siswa/edit?id=' . $id)->with('error', 'Semua data wajib diisi!');
-            exit;
+            die();
         }
 
-        // 4. Eksekusi Update ke Tabel Siswa Saja
+        // 5. Eksekusi Update ke Tabel Siswa Saja
         $updateResult = Siswa::update($id, $dataSiswa);
 
         // CEK STATUS
@@ -152,7 +153,7 @@ class SiswaController extends Controller
             die();
         }
 
-        // 5. Selesai!
+        // 6. Selesai!
         $this->redirect('siswa')->with('success', 'Data siswa berhasil diperbarui!');
     }
 
@@ -168,8 +169,6 @@ class SiswaController extends Controller
             exit;
         }
 
-        $userId = $student['user_id'];
-
         // 2. Hapus data Siswa (Child) terlebih dahulu
         $deleteResult = Siswa::delete($id);
 
@@ -181,7 +180,7 @@ class SiswaController extends Controller
         }
 
         // 3. Hapus data User (Parent)
-        $deleteResult = User::delete($userId);
+        $deleteResult = User::delete($student['user_id']);
 
         // CEK STATUS
         if ($deleteResult['status'] === false) {
