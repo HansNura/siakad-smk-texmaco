@@ -52,6 +52,51 @@ class Absensi extends Model
         }
     }
 
+    // Revise (Update Header + Replace Details)
+    public function revise($absensi_id, $headerData, $detailsData)
+    {
+        try {
+            $this->conn->beginTransaction();
+
+            // 1. Update Header (Reset to Draft, clear rejection reason)
+            $queryHeader = "UPDATE " . $this->table . "
+                            SET catatan_harian = :catatan,
+                                status_validasi = 'Draft',
+                                alasan_penolakan = NULL
+                            WHERE absensi_id = :absensi_id";
+            $stmtHeader = $this->conn->prepare($queryHeader);
+            $stmtHeader->execute([
+                ':catatan'    => $headerData['catatan_harian'],
+                ':absensi_id' => $absensi_id,
+            ]);
+
+            // 2. Delete Old Details
+            $queryDelete = "DELETE FROM detail_absensi WHERE absensi_id = :absensi_id";
+            $stmtDelete  = $this->conn->prepare($queryDelete);
+            $stmtDelete->execute([':absensi_id' => $absensi_id]);
+
+            // 3. Insert New Details
+            $queryDetail = "INSERT INTO detail_absensi (absensi_id, siswa_id, status_kehadiran)
+                            VALUES (:absensi_id, :siswa_id, :status_kehadiran)";
+            $stmtDetail = $this->conn->prepare($queryDetail);
+
+            foreach ($detailsData as $detail) {
+                $stmtDetail->execute([
+                    ':absensi_id'       => $absensi_id,
+                    ':siswa_id'         => $detail['siswa_id'],
+                    ':status_kehadiran' => $detail['status_kehadiran'],
+                ]);
+            }
+
+            $this->conn->commit();
+            return ['status' => true, 'message' => 'Revisi absensi berhasil disimpan.'];
+
+        } catch (PDOException $e) {
+            $this->conn->rollBack();
+            return ['status' => false, 'message' => 'Gagal menyimpan revisi: ' . $e->getMessage()];
+        }
+    }
+
     // Check if attendance already exists for a schedule on a date
     public static function checkExisting($jadwal_id, $tanggal)
     {
@@ -99,13 +144,26 @@ class Absensi extends Model
     }
 
     // Update Validation Status
-    public static function updateStatus($absensi_id, $status)
+    public static function updateStatus($absensi_id, $status, $alasan = null)
     {
         $instance = new static();
-        $query    = "UPDATE " . $instance->table . " SET status_validasi = :status WHERE absensi_id = :absensi_id";
-        $stmt     = $instance->conn->prepare($query);
+
+        $query  = "UPDATE " . $instance->table . " SET status_validasi = :status";
+        $params = [':status' => $status, ':absensi_id' => $absensi_id];
+
+        if ($status === 'Rejected') {
+            $query .= ", alasan_penolakan = :alasan";
+            $params[':alasan'] = $alasan;
+        } else {
+            // Reset reason if valid? Or keep history? Usually reset if Valid.
+            $query .= ", alasan_penolakan = NULL";
+        }
+
+        $query .= " WHERE absensi_id = :absensi_id";
+
+        $stmt = $instance->conn->prepare($query);
         try {
-            $stmt->execute([':status' => $status, ':absensi_id' => $absensi_id]);
+            $stmt->execute($params);
             return ['status' => true];
         } catch (PDOException $e) {
             return ['status' => false, 'message' => $e->getMessage()];
@@ -115,16 +173,22 @@ class Absensi extends Model
     public static function findWithDetails($absensi_id)
     {
         $instance = new static();
-        $query    = "SELECT a.*,
-                         j.hari, j.jam_mulai, j.jam_selesai,
-                         m.nama_mapel, k.nama_kelas,
-                         g.nama_lengkap as nama_guru
-                  FROM " . $instance->table . " a
-                  JOIN jadwal_pelajaran j ON a.jadwal_id = j.jadwal_id
-                  JOIN mata_pelajaran m ON j.mapel_id = m.mapel_id
-                  JOIN kelas k ON j.kelas_id = k.kelas_id
-                  JOIN guru g ON j.guru_id = g.guru_id
-                  WHERE a.absensi_id = :absensi_id";
+        $query    = "SELECT
+                            a.*,
+                            j.hari,
+                            j.jam_mulai,
+                            j.jam_selesai,
+                            m.nama_mapel,
+                            k.nama_kelas,
+                            g.nama_lengkap AS nama_guru
+                        FROM
+                            $instance->table a
+                            JOIN jadwal_pelajaran j ON a.jadwal_id = j.jadwal_id
+                            JOIN mata_pelajaran m ON j.mapel_id = m.mapel_id
+                            JOIN kelas k ON j.kelas_id = k.kelas_id
+                            JOIN guru g ON j.guru_id = g.guru_id
+                        WHERE
+                            a.absensi_id = :absensi_id";
 
         $stmt = $instance->conn->prepare($query);
         $stmt->execute([':absensi_id' => $absensi_id]);

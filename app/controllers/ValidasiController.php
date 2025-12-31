@@ -104,7 +104,10 @@ class ValidasiController extends Controller
 
         $status = ($action === 'approve') ? 'Valid' : 'Rejected';
 
-        $result = Absensi::updateStatus($absensi_id, $status);
+        $result = Absensi::update($absensi_id, [
+            'status_validasi'  => $status,
+            'alasan_penolakan' => $action === 'reject' ? $_POST['alasan_penolakan'] : null,
+        ]);
 
         if ($result['status']) {
             $this->redirect('validasi')->with('success', 'Status absensi berhasil diperbarui menjadi ' . $status);

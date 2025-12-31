@@ -19,66 +19,46 @@ class AbsensiController extends Controller
     public function __construct()
     {
         // Must be logged in
-        if (! isset($_SESSION['user_id'])) {
-            header('Location: ' . BASE_URL . '/login');
+        if (! isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Guru') {
+            $this->redirect('login')->with('error', 'Anda harus login sebagai Guru.');
             exit;
         }
         // Ideally check role = Guru or Admin
     }
 
     // Show today's schedule for the teacher
-    public function create()
+    public function index()
     {
         // 1. Determine active Academic Year
         $activeTahun = TahunAjaran::getActive();
+
         if (! $activeTahun) {
-            echo "Belum ada Tahun Ajaran aktif.";
-            return;
+            $this->redirect('dashboard')->with('error', 'Belum ada Tahun Ajaran aktif.');
+            exit;
         }
 
         // 2. Identify the Guru
         // Assuming user_id is in session. detailed role check needed.
-        // For now, assume if role is 'Guru', we find Guru record by user_id
-        $guru_id = null;
-        if ($_SESSION['role'] === 'Guru') {
-            $guru = Guru::findByUserId($_SESSION['user_id']);
-            if ($guru) {
-                $guru_id = $guru['guru_id'];
-            }
-        } elseif ($_SESSION['role'] === 'Admin') {
-            // Admin can see all? Or simulate?
-            // For now, let's just say Admin can't input attendance or needs to pick a teacher.
-            // But usually this view is for the logged in teacher.
-            $this->redirect('dashboard')->with('error', 'Fitur ini khusus Guru.');
-            exit;
-        }
+        // For now, assume user_id is linked to a Guru record
+        $guru = Guru::where('user_id', $_SESSION['user_id'])->first();
 
-        if (! $guru_id) {
+        if (! $guru) {
             // Handle error: User is not linked to a Guru record
             $this->redirect('dashboard')->with('error', 'Data Guru tidak ditemukan.');
             exit;
         }
 
         // 3. Determine Day
-        $hariArr = [
-            'Sunday'    => 'Minggu',
-            'Monday'    => 'Senin',
-            'Tuesday'   => 'Selasa',
-            'Wednesday' => 'Rabu',
-            'Thursday'  => 'Kamis',
-            'Friday'    => 'Jumat',
-            'Saturday'  => 'Sabtu',
-        ];
         $todayEnglish = date('l');
-        $hariIni      = $hariArr[$todayEnglish] ?? 'Minggu';
+        $hariIni      = ENUM['HARI'][$todayEnglish] ?? 'Minggu';
 
         // 4. Fetch Schedules
-        $jadwal = Jadwal::getByGuru($guru_id, $hariIni, $activeTahun['tahun_id']);
+        $jadwal = Jadwal::getByGuru($guru['guru_id'], $hariIni, $activeTahun['tahun_id']);
 
         // Check submission status for each schedule
         foreach ($jadwal as &$j) {
             $existing            = Absensi::checkExisting($j['jadwal_id'], date('Y-m-d'));
-            $j['status_absensi'] = $existing ? $existing['status_validasi'] : 'Belum Input';
+            $j['status_absensi'] = $existing ? ENUM['STATUS'][$existing['status_validasi']] : ENUM['STATUS']['Belum Input'];
             $j['absensi_id']     = $existing ? $existing['absensi_id'] : null;
         }
 
@@ -89,7 +69,7 @@ class AbsensiController extends Controller
             'tanggal' => date('Y-m-d'),
         ];
 
-        $this->view('akademik/absensi/create', $data);
+        $this->view('akademik/absensi/index', $data);
     }
 
     // Show Input Form
@@ -97,7 +77,7 @@ class AbsensiController extends Controller
     {
         $jadwal_id = $_GET['jadwal_id'] ?? null;
         if (! $jadwal_id) {
-            $this->redirect('absensi/create');
+            $this->redirect('absensi');
             exit;
         }
 
@@ -109,29 +89,46 @@ class AbsensiController extends Controller
 
         // Cek existing
         $existing = Absensi::checkExisting($jadwal_id, date('Y-m-d'));
-        if ($existing) {
-            // If already exists, maybe redirect to view/edit?
-            // specific logic can be added here.
-            // For now, prevent double input.
-            $this->redirect('absensi/create')->with('info', 'Absensi sudah diinput. Status: ' . $existing['status_validasi']);
-            exit;
-        }
-
-        // Fetch Students
+        // Load default siswa list
         $siswa = Siswa::getByKelas($jadwal['kelas_id']);
 
+        // Default values for form
+        $absensiData = null;
+        $detailsMap  = [];
+
+        if ($existing) {
+            if ($existing['status_validasi'] === 'Rejected') {
+                // Allow edit. Load existing details to map status
+                $absensiData     = $existing;
+                $existingDetails = Absensi::getDetails($existing['absensi_id']);
+                foreach ($existingDetails as $d) {
+                    $detailsMap[$d['siswa_id']] = $d['status_kehadiran'];
+                }
+                // Override catatan harian default with existing
+                $jadwal['catatan_harian_value'] = $existing['catatan_harian'];
+
+            } else {
+                // Prevent double input for Valid or Draft (Teacher should wait or ask admin to delete if Draft need edit?
+                // Or allow Draft edit too? For now, user only asked for Rejected revision flow.
+                $this->redirect('absensi/create')->with('info', 'Absensi sudah diinput. Status: ' . $existing['status_validasi']);
+                exit;
+            }
+        }
+
         $data = [
-            'title'   => 'Form Absensi: ' . $jadwal['nama_kelas'] . ' - ' . $jadwal['nama_mapel'],
-            'jadwal'  => $jadwal,
-            'siswa'   => $siswa,
-            'tanggal' => date('Y-m-d'),
+            'title'        => 'Form Absensi: ' . $jadwal['nama_kelas'] . ' - ' . $jadwal['nama_mapel'],
+            'jadwal'       => $jadwal,
+            'siswa'        => $siswa,
+            'tanggal'      => date('Y-m-d'),
+            'absensi'      => $absensiData, // contains alasan_penolakan, status_validasi
+            'savedDetails' => $detailsMap,
         ];
 
         $this->view('akademik/absensi/input', $data);
     }
 
     // Store Attendance
-    public function store()
+    public function submit()
     {
         $jadwal_id = $_POST['jadwal_id'];
         $tanggal   = $_POST['tanggal']; // Usually curdate
@@ -157,8 +154,22 @@ class AbsensiController extends Controller
             'catatan_harian' => $catatan,
         ];
 
-        $model  = new Absensi();
-        $result = $model->createWithDetail($headerData, $detailsData);
+        $model = new Absensi();
+
+        // Check if updating
+        $existing = Absensi::checkExisting($jadwal_id, $tanggal);
+
+        if ($existing && $existing['status_validasi'] === 'Rejected') {
+            // REVISION FLOW
+            $result = $model->revise($existing['absensi_id'], $headerData, $detailsData);
+        } elseif ($existing) {
+            // Block other updates for now
+            $this->redirect('absensi/create')->with('error', 'Data sudah ada dan tidak dalam status revisi.');
+            exit;
+        } else {
+            // NEW INSERT
+            $result = $model->createWithDetail($headerData, $detailsData);
+        }
 
         if ($result['status']) {
             $this->redirect('absensi/create')->with('success', 'Absensi berhasil disimpan.');

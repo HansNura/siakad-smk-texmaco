@@ -88,9 +88,9 @@ $routes->post('/plotting/add', [PlottingController::class, 'add'], 'authMiddlewa
 $routes->post('/plotting/remove', [PlottingController::class, 'remove'], 'authMiddleware');
 
 // ABSENSI (GURU)
-$routes->get('/absensi/create', [AbsensiController::class, 'create'], 'authMiddleware');
+$routes->get('/absensi', [AbsensiController::class, 'index'], 'authMiddleware');
 $routes->get('/absensi/input', [AbsensiController::class, 'input'], 'authMiddleware');
-$routes->post('/absensi/store', [AbsensiController::class, 'store'], 'authMiddleware');
+$routes->post('/absensi/submit', [AbsensiController::class, 'submit'], 'authMiddleware');
 
 // VALIDASI (WALI KELAS)
 $routes->get('/validasi', [ValidasiController::class, 'index'], 'authMiddleware');

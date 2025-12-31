@@ -72,7 +72,13 @@
                                 <div class="modal-body">
                                     <p>Apakah Anda yakin ingin menolak absensi ini? Guru akan diminta untuk merevisi.
                                     </p>
-                                    <!-- In future iterations, add reject reason field -->
+                                    <div class="mb-3">
+                                        <label for="alasan_penolakan" class="form-label fw-bold">Alasan Penolakan <span
+                                                class="text-danger">*</span></label>
+                                        <textarea name="alasan_penolakan" id="alasan_penolakan" class="form-control"
+                                            rows="3"
+                                            placeholder="Contoh: Siswa atas nama Budi sakit tapi tertulis alpa."></textarea>
+                                    </div>
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary"
