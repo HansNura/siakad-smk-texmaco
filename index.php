@@ -2,7 +2,7 @@
 
 session_start();
 
-require_once 'app/Core/database.php';
+require_once 'app/Core/Database.php';
 require_once 'app/Core/Route.php';
 require_once 'app/Core/Middleware.php';
 

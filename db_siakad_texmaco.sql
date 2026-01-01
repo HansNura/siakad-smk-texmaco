@@ -143,15 +143,16 @@ CREATE TABLE `jadwal_pelajaran` (
   `jam_mulai` TIME NOT NULL,
   `jam_selesai` TIME NOT NULL,
   PRIMARY KEY (`jadwal_id`),
-  INDEX `idx_tahun` (`tahun_id`, ASC) USING BTREE,
-  INDEX `idx_kelas` (`kelas_id`, ASC) USING BTREE,
-  INDEX `idx_mapel` (`mapel_id`, ASC) USING BTREE,
-  INDEX `idx_guru` (`guru_id`, ASC) USING BTREE,
+  INDEX `idx_tahun`(`tahun_id`) USING BTREE,
+  INDEX `idx_kelas`(`kelas_id`) USING BTREE,
+  INDEX `idx_mapel`(`mapel_id`) USING BTREE,
+  INDEX `idx_guru`(`guru_id`) USING BTREE,
   CONSTRAINT `fk_jadwal_pelajaran_tahun` FOREIGN KEY (`tahun_id`) REFERENCES `tahun_ajaran` (`tahun_id`) ON DELETE RESTRICT,
   CONSTRAINT `fk_jadwal_pelajaran_kelas` FOREIGN KEY (`kelas_id`) REFERENCES `kelas` (`kelas_id`) ON DELETE CASCADE,
   CONSTRAINT `fk_jadwal_pelajaran_mapel` FOREIGN KEY (`mapel_id`) REFERENCES `mata_pelajaran` (`mapel_id`) ON DELETE RESTRICT,
   CONSTRAINT `fk_jadwal_pelajaran_guru` FOREIGN KEY (`guru_id`) REFERENCES `guru` (`guru_id`) ON DELETE RESTRICT
-) ENGINE=InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_uca1400_ai_ci ROW_FORMAT = Dynamic;;
+) ENGINE=InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_uca1400_ai_ci ROW_FORMAT = Dynamic;
+
 
 -- ----------------------------
 -- Records of jadwal_pelajaran
@@ -159,13 +160,6 @@ CREATE TABLE `jadwal_pelajaran` (
 INSERT INTO `jadwal_pelajaran` VALUES (1, 2, 1, 1, 1, 'Senin', '07:00:00', '08:30:00');
 INSERT INTO `jadwal_pelajaran` VALUES (2, 2, 1, 3, 3, 'Senin', '08:45:00', '10:15:00');
 INSERT INTO `jadwal_pelajaran` VALUES (3, 2, 2, 4, 2, 'Senin', '07:00:00', '08:30:00');
-
--- ----------------------------
--- Records of jadwal
--- ----------------------------
-INSERT INTO `jadwal` VALUES (1, 2, 1, 1, 1, 'Senin', '07:00:00', '08:30:00');
-INSERT INTO `jadwal` VALUES (2, 2, 1, 3, 3, 'Senin', '08:45:00', '10:15:00');
-INSERT INTO `jadwal` VALUES (3, 2, 2, 4, 2, 'Senin', '07:00:00', '08:30:00');
 
 -- ----------------------------
 -- Table structure for kelas
@@ -194,23 +188,27 @@ INSERT INTO `kelas` VALUES (2, 2, 2, 'X-IPS-1', '10', 'IPS');
 -- ----------------------------
 -- Table structure for mata_pelajaran
 -- ----------------------------
+-- 1. Hapus tabel lama jika ada kendala struktur
 DROP TABLE IF EXISTS `mata_pelajaran`;
-CREATE TABLE `mata_pelajaran`  (
-  `mapel_id` int(11) NOT NULL AUTO_INCREMENT,
-  `kode_mapel` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_uca1400_ai_ci NOT NULL,
-  `nama_mapel` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_uca1400_ai_ci NOT NULL,
-  `kkm` int(11) NOT NULL DEFAULT 75 COMMENT 'Kriteria Ketuntasan Minimal',
-  PRIMARY KEY (`mapel_id`) USING BTREE,
-  UNIQUE INDEX `kode_mapel`(`kode_mapel` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_uca1400_ai_ci ROW_FORMAT = Dynamic;
 
--- ----------------------------
--- Records of mata_pelajaran
--- ----------------------------
-INSERT INTO `mata_pelajaran` VALUES (1, 'MTK-W', 'Matematika Wajib', 75);
-INSERT INTO `mata_pelajaran` VALUES (2, 'FIS-P', 'Fisika Peminatan', 78);
-INSERT INTO `mata_pelajaran` VALUES (3, 'BIO-P', 'Biologi Peminatan', 78);
-INSERT INTO `mata_pelajaran` VALUES (4, 'SOS-W', 'Sosiologi', 75);
+-- 2. Buat ulang tabel dengan kolom 'kelompok' sesuai spesifikasi Anda
+CREATE TABLE `mata_pelajaran` (
+  `mapel_id` int(11) NOT NULL AUTO_INCREMENT,
+  `kode_mapel` varchar(20) NOT NULL,
+  `nama_mapel` varchar(100) NOT NULL,
+  `kelompok` ENUM('A','B','C1','C2','C3') NOT NULL COMMENT 'A:Nasional, B:Wilayah, C:Kejuruan',
+  `kkm` int(11) NOT NULL DEFAULT 75,
+  PRIMARY KEY (`mapel_id`),
+  UNIQUE KEY `kode_mapel` (`kode_mapel`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 3. Masukkan kembali record dengan data kelompok yang sesuai
+INSERT INTO `mata_pelajaran` (`mapel_id`, `kode_mapel`, `nama_mapel`, `kelompok`, `kkm`) VALUES 
+(1, 'MTK-W', 'Matematika Wajib', 'A', 75),
+(2, 'FIS-P', 'Fisika Peminatan', 'C1', 78),
+(3, 'BIO-P', 'Biologi Peminatan', 'C1', 78),
+(4, 'SOS-W', 'Sosiologi', 'A', 75);
+
 
 -- ----------------------------
 -- Table structure for nilai
@@ -342,5 +340,19 @@ INSERT INTO `users` VALUES (8, 'siswa_citra', 'hash_siswa3', 'Siswa', 1, NULL, '
 INSERT INTO `users` VALUES (9, 'siswa_doni', 'hash_siswa4', 'Siswa', 1, NULL, '2025-12-29 13:06:59');
 INSERT INTO `users` VALUES (10, 'siswa_eka', 'hash_siswa5', 'Siswa', 1, NULL, '2025-12-29 13:06:59');
 INSERT INTO `users` VALUES (11, 'siswa_hans', '$2y$12$LrJc4rDIJIpNefgbi36vau3Sm0JW2VBz52ElccPomcw0CMYCnqgqS', 'Siswa', 1, NULL, '2025-12-29 15:38:08');
+
+-- 1. Tambah kolom nisn setelah kolom nis
+ALTER TABLE `siswa` ADD COLUMN `nisn` VARCHAR(20) AFTER `nis`;
+
+-- 2. Sesuaikan nama kolom tgl_lahir menjadi tanggal_lahir agar cocok dengan View
+ALTER TABLE `siswa` CHANGE COLUMN `tgl_lahir` `tanggal_lahir` DATE NOT NULL;
+
+-- 3. Update data sampel (Contoh untuk Ani Lestari)
+UPDATE `siswa` SET `nisn` = '0081234561' WHERE `nis` = '24001';
+UPDATE `siswa` SET `nisn` = '0081234562' WHERE `nis` = '24002';
+UPDATE `siswa` SET `nisn` = '0081234563' WHERE `nis` = '24003';
+UPDATE `siswa` SET `nisn` = '0081234564' WHERE `nis` = '24004';
+UPDATE `siswa` SET `nisn` = '0081234565' WHERE `nis` = '24005';
+
 
 SET FOREIGN_KEY_CHECKS = 1;
