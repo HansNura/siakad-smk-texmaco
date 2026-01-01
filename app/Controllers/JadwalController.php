@@ -16,13 +16,6 @@ use App\Models\TahunAjaran;
 
 class JadwalController extends Controller
 {
-    public function __construct()
-    {
-        if (! isset($_SESSION['role']) || $_SESSION['role'] !== 'Admin') {
-            header('Location: ' . BASE_URL . '/dashboard');
-            exit;
-        }
-    }
 
     public function index()
     {

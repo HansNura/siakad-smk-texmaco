@@ -42,3 +42,10 @@ define("SISWA_PASSWORD", "siswa");
 
 define("GURU_USERNAME", "guru");
 define("GURU_PASSWORD", "guru");
+
+function dd($data)
+{
+  echo "<pre>";
+  die(var_dump($data));
+  echo "</pre>";
+}
