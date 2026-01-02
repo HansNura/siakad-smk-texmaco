@@ -3,133 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Input Absensi Kelas</title>
+    <title>Validasi Absensi</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <main class="att-container">
-        
-        <form id="attendanceForm" class="att-form" action="/submit-attendance" method="POST">
-            
-            <section class="att-card att-summary-legend">
-                <div class="legend-item status-hadir">
-                    <span class="legend-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                    </span>
-                    <span class="legend-label">Hadir</span>
-                </div>
-                <div class="legend-item status-sakit">
-                    <span class="legend-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12h14"></path></svg>
-                    </span>
-                    <span class="legend-label">Sakit</span>
-                </div>
-                <div class="legend-item status-izin">
-                    <span class="legend-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                    </span>
-                    <span class="legend-label">Izin</span>
-                </div>
-                <div class="legend-item status-alfa">
-                    <span class="legend-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                    </span>
-                    <span class="legend-label">Alfa</span>
-                </div>
-            </section>
+    <main class="page-container">
 
-            <section class="att-card att-note-section">
-                <label for="dailyNote" class="att-label">Catatan Harian Guru</label>
-                <textarea id="dailyNote" name="daily_note" class="att-textarea" placeholder="Tulis catatan mengenai kegiatan belajar hari ini..." required></textarea>
-            </section>
-
-            <section class="att-card att-student-list-card">
-                <div class="att-list-header">
-                    <span>No</span>
-                    <span>Nama Siswa</span>
-                    <span class="text-right">Status</span>
-                </div>
-
-                <div class="att-list-wrapper" id="studentList">
-                    <div class="att-student-row" data-student-id="1">
-                        <div class="student-index">1</div>
-                        <div class="student-name">Ahmad Zulkarnain</div>
-                        
-                        <div class="att-control-area">
-                            <button type="button" class="att-trigger-btn" aria-label="Buka Opsi Absensi">
-                                <span class="dots">•••</span>
-                            </button>
-
-                            <div class="att-options-selector hidden">
-                                <label class="opt-item status-hadir">
-                                    <input type="radio" name="student[1][status]" value="hadir" class="visually-hidden">
-                                    <span class="opt-icon">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                    </span>
-                                </label>
-                                <label class="opt-item status-sakit">
-                                    <input type="radio" name="student[1][status]" value="sakit" class="visually-hidden">
-                                    <span class="opt-icon">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12h14"></path></svg>
-                                    </span>
-                                </label>
-                                <label class="opt-item status-izin">
-                                    <input type="radio" name="student[1][status]" value="izin" class="visually-hidden">
-                                    <span class="opt-icon">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                                    </span>
-                                </label>
-                                <label class="opt-item status-alfa">
-                                    <input type="radio" name="student[1][status]" value="alfa" class="visually-hidden">
-                                    <span class="opt-icon">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                                    </span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="att-student-row" data-student-id="2">
-                        <div class="student-index">2</div>
-                        <div class="student-name">Budi Santoso</div>
-                        <div class="att-control-area">
-                            <button type="button" class="att-trigger-btn">
-                                <span class="dots">•••</span>
-                            </button>
-                            <div class="att-options-selector hidden">
-                                <label class="opt-item status-hadir"><input type="radio" name="student[2][status]" value="hadir" class="visually-hidden"><span class="opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg></span></label>
-                                <label class="opt-item status-sakit"><input type="radio" name="student[2][status]" value="sakit" class="visually-hidden"><span class="opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12h14"></path></svg></span></label>
-                                <label class="opt-item status-izin"><input type="radio" name="student[2][status]" value="izin" class="visually-hidden"><span class="opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></span></label>
-                                <label class="opt-item status-alfa"><input type="radio" name="student[2][status]" value="alfa" class="visually-hidden"><span class="opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></span></label>
-                            </div>
-                        </div>
-                    </div>
-                     </div>
-            </section>
-
-            <section class="att-card att-count-summary">
-                <div class="count-item">
-                    <span class="count-label">Hadir</span>
-                    <span class="count-val val-hadir" id="countHadir">0</span>
-                </div>
-                <div class="count-item">
-                    <span class="count-label">Sakit</span>
-                    <span class="count-val val-sakit" id="countSakit">0</span>
-                </div>
-                <div class="count-item">
-                    <span class="count-label">Izin</span>
-                    <span class="count-val val-izin" id="countIzin">0</span>
-                </div>
-                <div class="count-item">
-                    <span class="count-label">Alfa</span>
-                    <span class="count-val val-alfa" id="countAlfa">0</span>
-                </div>
-            </section>
-
-            <div class="att-action-area">
-                <button type="submit" class="btn-submit">Mulai Kegiatan Belajar</button>
+        <header class="page-header">
+            <h1 class="page-title">Detail Validasi Absensi</h1>
+            <div class="meta-info">
+                <span class="meta-id">ID: #REQ-2023-10-0045</span>
+                <span class="meta-status">Menunggu Validasi</span>
             </div>
+        </header>
 
-        </form>
-    </main>
-    
+        <div class="row">
+            
+            <div class="col-4">
+                <form id="validationForm" action="/process-validation" method="POST">
+                    <input type="hidden" name="validation_status" id="validationStatusInput" value="">
+        
+                    <section class="card validation-card">
+                        <h2 class="card-title visually-hidden">Informasi Jadwal</h2>
+                        
+                        <div class="info-list">
+                            <div class="info-row" style="flex-direction: column; gap: 4px;">
+                                <span class="info-label">Waktu</span>
+                                <span class="info-value">Senin, 23 Okt 2023 <br> 07:00 - 08:40</span>
+                            </div>
+                            <div class="info-row" style="flex-direction: column; gap: 4px;">
+                                <span class="info-label">Kelas / Mapel</span>
+                                <span class="info-value">XII IPA 2 &bull; Fisika Dasar</span>
+                            </div>
+                            <div class="info-row" style="flex-direction: column; gap: 4px;">
+                                <span class="info-label">Guru Pengajar</span>
+                                <span class="info-value">Budi Santoso, S.Pd.</span>
+                            </div>
+                            <div class="info-row" style="flex-direction: column; gap: 4px;">
+                                <span class="info-label">Catatan Guru</span>
+                                <p class="info-value text-wrap" style="font-weight: 400; font-size: 14px;">Siswa atas nama Rian sakit di UKS pada jam kedua. Selebihnya aman.</p>
+                            </div>
+                        </div>
+        
+                        <div class="action-group" style="flex-direction: column;">
+                            <button type="button" class="btn btn-solid-success" id="btnTriggerApprove">
+                                Validasi Absensi
+                            </button>
+                            <button type="button" class="btn btn-outline-danger" id="btnTriggerReject">
+                                Tolak (Revisi)
+                            </button>
+                        </div>
+                    </section>
+        
+                    <div id="modalReject" class="modal-overlay hidden" role="dialog" aria-modal="true">
+                        <div class="modal-box">
+                            <h3 class="modal-title">Tolak Pengajuan Absensi?</h3>
+                            <p class="modal-desc">Tindakan ini akan mengembalikan status absensi ke guru untuk diperbaiki.</p>
+                            <div class="form-field">
+                                <label for="rejectReason" class="field-label">Alasan Penolakan <span class="text-danger">*</span></label>
+                                <textarea name="rejection_reason" id="rejectReason" class="input-textarea" placeholder="Contoh: Data siswa tidak sesuai..."></textarea>
+                            </div>
+                            <div class="modal-actions">
+                                <button type="button" class="btn btn-ghost" data-close-modal>Batal</button>
+                                <button type="submit" class="btn btn-solid-danger" id="submitReject">Ya, Tolak Absensi</button>
+                            </div>
+                        </div>
+                    </div>
+        
+                    <div id="modalApprove" class="modal-overlay hidden" role="dialog" aria-modal="true">
+                        <div class="modal-box">
+                            <h3 class="modal-title">Konfirmasi Validasi</h3>
+                            <p class="modal-desc">Apakah Anda yakin data absensi ini sudah benar dan siap disimpan?</p>
+                            <div class="modal-actions">
+                                <button type="button" class="btn btn-ghost" data-close-modal>Batal</button>
+                                <button type="submit" class="btn btn-solid-success" id="submitApprove">Ya, Validasi</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="col-8">
+                <section class="card table-card">
+                    <h2 class="card-title">Detail Kehadiran Siswa</h2>
+                    <div class="table-wrapper">
+                        <table class="att-table">
+                            <thead>
+                                <tr>
+                                    <th class="w-no">No</th>
+                                    <th class="w-nis">NIS</th>
+                                    <th class="text-left">Nama Siswa</th>
+                                    <th class="w-status">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="text-center">1</td>
+                                    <td class="text-center">10293</td>
+                                    <td>Ahmad Zulkarnain</td>
+                                    <td><span class="badge status-hadir">Hadir</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-center">2</td>
+                                    <td class="text-center">10294</td>
+                                    <td>Citra Lestari</td>
+                                    <td><span class="badge status-sakit">Sakit</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-center">3</td>
+                                    <td class="text-center">10295</td>
+                                    <td>Doni Pratama</td>
+                                    <td><span class="badge status-alfa">Alfa</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-center">4</td>
+                                    <td class="text-center">10296</td>
+                                    <td>Eka Saputra</td>
+                                    <td><span class="badge status-hadir">Hadir</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+            </div> </main>
     <script src="script.js"></script>
 </body>
 </html>

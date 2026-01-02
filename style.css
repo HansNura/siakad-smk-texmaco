@@ -1,108 +1,147 @@
-/* --- Variables & Reset --- */
+/* --- 1. Variables & Reset --- */
 :root {
-    /* Color Palette */
-    --c-hadir: #10b981; /* Green */
-    --c-sakit: #06b6d4; /* Teal/Cyan */
-    --c-izin: #3b82f6;  /* Blue */
-    --c-alfa: #ef4444;  /* Red */
-    --c-gray-50: #f9fafb;
-    --c-gray-100: #f3f4f6;
-    --c-gray-400: #9ca3af;
-    --c-gray-800: #1f2937;
-    --c-white: #ffffff;
-    --c-primary: #2563eb; /* Primary Blue Button */
+    --c-primary: #10b981;    /* Green */
+    --c-danger: #ef4444;     /* Red */
+    --c-text-main: #1f2937;
+    --c-text-muted: #6b7280;
+    --c-bg-page: #f3f4f6;
+    --c-bg-card: #ffffff;
+    --c-border: #e5e7eb;
     
-    /* Spacing & Radius */
     --radius-md: 8px;
-    --radius-full: 9999px;
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-body { background-color: var(--c-gray-100); color: var(--c-gray-800); padding: 20px; }
+body { background-color: var(--c-bg-page); color: var(--c-text-main); line-height: 1.5; padding: 24px 16px; }
 
-/* --- Global Utilities --- */
-.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
-.text-right { text-align: right; }
+/* Utilities */
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
 .hidden { display: none !important; }
+.text-danger { color: var(--c-danger); }
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-wrap { white-space: pre-wrap; }/* --- UPDATE: Layout Container --- */
 
-/* --- Layout Container --- */
-.att-container { max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
-.att-card { background: var(--c-white); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); padding: 16px; width: 100%; }
+/* Ubah max-width agar cukup untuk 2 kolom bersebelahan */
+.page-container { 
+    max-width: 1100px; /* Diperlebar dari 700px */
+    margin: 0 auto; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 20px; 
+}
 
-/* --- Component 1: Summary Legend --- */
-.att-summary-legend { display: flex; justify-content: space-around; align-items: center; gap: 8px; }
-.legend-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.legend-icon { width: 32px; height: 32px; border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; border: 1.5px solid currentColor; }
-.legend-item.status-hadir { color: var(--c-hadir); }
-.legend-item.status-sakit { color: var(--c-sakit); }
-.legend-item.status-izin { color: var(--c-izin); }
-.legend-item.status-alfa { color: var(--c-alfa); }
-.legend-icon svg { width: 18px; height: 18px; }
-.legend-label { font-size: 12px; font-weight: 500; }
+/* --- KOMPONEN A: Header --- */
+.page-header { margin-bottom: 8px; }
+.page-title { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+.meta-info { display: flex; gap: 12px; font-size: 14px; color: var(--c-text-muted); align-items: center; }
+.meta-status { background: #e0e7ff; color: #3730a3; padding: 2px 8px; border-radius: 4px; font-weight: 500; font-size: 12px; }
 
-/* --- Component 2: Note Input --- */
-.att-label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; }
-.att-textarea { width: 100%; border: 1px solid var(--c-gray-400); border-radius: var(--radius-md); padding: 12px; min-height: 80px; font-size: 14px; resize: vertical; }
-.att-textarea:focus { outline: 2px solid var(--c-primary); border-color: transparent; }
+/* --- Global Card Style --- */
+.card { background: var(--c-bg-card); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); border: 1px solid var(--c-border); overflow: hidden; }
+.card-title { padding: 16px 20px; font-size: 16px; font-weight: 600; border-bottom: 1px solid var(--c-border); margin: 0; }
 
-/* --- Component 3: Student List --- */
-.att-student-list-card { padding: 0; overflow: hidden; } /* Padding handled by children */
-.att-list-header { display: flex; padding: 16px; background: var(--c-gray-50); font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--c-gray-400); border-bottom: 1px solid var(--c-gray-100); }
-.att-list-header span:nth-child(1) { width: 30px; } /* Index */
-.att-list-header span:nth-child(2) { flex: 1; }    /* Name */
-.att-list-header span:nth-child(3) { width: 100px; } /* Status Control */
+/* --- KOMPONEN B: Validation Info Card --- */
+.validation-card { padding: 20px; display: flex; flex-direction: column; gap: 24px; }
+.info-list { display: flex; flex-direction: column; gap: 16px; }
 
-.att-student-row { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--c-gray-100); height: 60px; transition: background 0.2s; }
-.att-student-row:last-child { border-bottom: none; }
-.student-index { width: 30px; font-size: 14px; color: var(--c-gray-400); }
-.student-name { flex: 1; font-weight: 500; font-size: 15px; padding-right: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.att-control-area { width: 140px; display: flex; justify-content: flex-end; align-items: center; position: relative; }
+.info-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+.info-label { width: 140px; flex-shrink: 0; color: var(--c-text-muted); font-size: 14px; font-weight: 500; }
+.info-value { flex: 1; font-weight: 600; font-size: 15px; color: var(--c-text-main); }
 
-/* --- Component 4: Interaction & Selectors --- */
-.att-trigger-btn { background: none; border: none; font-size: 20px; color: var(--c-gray-400); cursor: pointer; padding: 4px 8px; border-radius: 4px; }
-.att-trigger-btn:hover { background-color: var(--c-gray-100); color: var(--c-gray-800); }
+/* Buttons */
+.action-group { display: flex; gap: 12px; margin-top: 8px; }
+.btn { flex: 1; padding: 12px; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; font-size: 14px; transition: all 0.2s; border: 1px solid transparent; }
 
-/* Selected State Icon (Replaces trigger) */
-.att-selected-display { width: 32px; height: 32px; border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1.5px solid currentColor; }
-.att-selected-display svg { width: 18px; height: 18px; }
-/* Colors for selected display */
-.att-selected-display.hadir { color: var(--c-hadir); background: rgba(16, 185, 129, 0.1); }
-.att-selected-display.sakit { color: var(--c-sakit); background: rgba(6, 182, 212, 0.1); }
-.att-selected-display.izin { color: var(--c-izin); background: rgba(59, 130, 246, 0.1); }
-.att-selected-display.alfa { color: var(--c-alfa); background: rgba(239, 68, 68, 0.1); }
+.btn-solid-success { background: var(--c-primary); color: white; }
+.btn-solid-success:hover { background: #059669; }
 
-/* The Inline Selector Options */
-.att-options-selector { display: flex; gap: 6px; position: absolute; right: 0; background: var(--c-white); padding-left: 10px; /* overlay prevention */ }
+.btn-solid-danger { background: var(--c-danger); color: white; }
+.btn-solid-danger:hover { background: #dc2626; }
 
-.opt-item { cursor: pointer; }
-.opt-icon { width: 32px; height: 32px; border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; border: 1px solid var(--c-gray-400); color: var(--c-gray-400); transition: all 0.2s; }
-.opt-icon svg { width: 16px; height: 16px; }
+.btn-outline-danger { background: white; border-color: var(--c-danger); color: var(--c-danger); }
+.btn-outline-danger:hover { background: #fef2f2; }
 
-/* Option Hover States */
-.opt-item:hover .opt-icon { transform: scale(1.1); }
-.opt-item.status-hadir:hover .opt-icon { border-color: var(--c-hadir); color: var(--c-hadir); }
-.opt-item.status-sakit:hover .opt-icon { border-color: var(--c-sakit); color: var(--c-sakit); }
-.opt-item.status-izin:hover .opt-icon { border-color: var(--c-izin); color: var(--c-izin); }
-.opt-item.status-alfa:hover .opt-icon { border-color: var(--c-alfa); color: var(--c-alfa); }
+.btn-ghost { background: transparent; color: var(--c-text-muted); }
+.btn-ghost:hover { background: var(--c-bg-page); color: var(--c-text-main); }
 
-/* --- Component 5: Count Summary --- */
-.att-count-summary { display: flex; justify-content: space-between; padding: 12px 24px; }
-.count-item { display: flex; flex-direction: column; align-items: center; }
-.count-label { font-size: 11px; text-transform: uppercase; color: var(--c-gray-400); margin-bottom: 2px; }
-.count-val { font-size: 18px; font-weight: 700; }
-.val-hadir { color: var(--c-hadir); }
-.val-sakit { color: var(--c-sakit); }
-.val-izin { color: var(--c-izin); }
-.val-alfa { color: var(--c-alfa); }
+/* --- KOMPONEN C: Table Card --- */
+.table-wrapper { overflow-x: auto; }
+.att-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.att-table th, .att-table td { padding: 12px 16px; border-bottom: 1px solid var(--c-border); }
+.att-table th { background: var(--c-bg-page); color: var(--c-text-muted); font-weight: 600; text-align: left; }
+.att-table tr:last-child td { border-bottom: none; }
 
-/* --- Component 6: Button --- */
-.btn-submit { width: 100%; background-color: var(--c-primary); color: white; border: none; padding: 14px; border-radius: var(--radius-md); font-size: 16px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
-.btn-submit:hover { opacity: 0.9; }
-.btn-submit:active { transform: translateY(1px); }
+/* Table Columns & Badges */
+.w-no { width: 50px; text-align: center; }
+.w-nis { width: 100px; text-align: center; }
+.w-status { width: 120px; text-align: center; }
 
-/* Responsive Tweak */
-@media (max-width: 380px) {
-    .att-control-area { width: 100%; justify-content: space-between; margin-top: 4px; }
-    .att-student-row { flex-wrap: wrap; height: auto; }
+.badge { display: inline-block; padding: 4px 10px; border-radius: 99px; font-size: 12px; font-weight: 600; }
+.status-hadir { background: #d1fae5; color: #065f46; }
+.status-sakit { background: #cffafe; color: #155e75; }
+.status-alfa { background: #fee2e2; color: #991b1b; }
+
+/* --- KOMPONEN D & E: Modals --- */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center; opacity: 1; transition: opacity 0.2s; backdrop-filter: blur(2px); }
+.modal-box { background: white; padding: 24px; border-radius: 12px; width: 90%; max-width: 450px; box-shadow: var(--shadow-lg); animation: slideUp 0.3s ease-out; }
+
+.modal-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; color: var(--c-text-main); }
+.modal-desc { font-size: 14px; color: var(--c-text-muted); margin-bottom: 20px; line-height: 1.5; }
+
+.form-field { margin-bottom: 24px; }
+.field-label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600; color: var(--c-text-main); }
+.input-textarea { width: 100%; padding: 12px; border: 1px solid var(--c-border); border-radius: var(--radius-md); min-height: 100px; font-size: 14px; resize: vertical; }
+.input-textarea:focus { outline: 2px solid var(--c-danger); border-color: transparent; }
+
+.modal-actions { display: flex; justify-content: flex-end; gap: 12px; }
+
+/* Animation & Mobile */
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@media (max-width: 480px) {
+    .info-row { flex-direction: column; gap: 4px; }
+    .info-label { width: 100%; font-size: 12px; }
+    .action-group { flex-direction: column-reverse; } /* Tombol Approve di atas */
+    .btn { width: 100%; }
+}
+
+
+
+/* --- BARU: Grid System (Row & Col) --- */
+.row {
+    display: flex;
+    gap: 24px; /* Jarak antar kolom */
+    align-items: flex-start; /* Agar tinggi kolom tidak dipaksa sama (opsional) */
+}
+
+/* Kolom Kiri (Sekitar 33%) */
+.col-4 {
+    flex: 0 0 33.333%;
+    max-width: 33.333%;
+}
+
+/* Kolom Kanan (Sekitar 66%) */
+.col-8 {
+    flex: 0 0 66.666%;
+    max-width: 66.666%;
+}
+
+/* --- RESPONSIVE: Mobile --- */
+/* Jika layar kecil (tablet/HP), jadikan 1 kolom lagi (stack) */
+@media (max-width: 768px) {
+    .row {
+        flex-direction: column;
+    }
+    
+    .col-4, .col-8 {
+        flex: 0 0 100%;
+        max-width: 100%;
+        width: 100%;
+    }
 }
