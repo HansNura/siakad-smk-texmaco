@@ -1,52 +1,54 @@
+
 <?php
 
 namespace App\Controllers;
 
-use App\Core\Controller;
+require_once __DIR__ . '/Controller.php';
+require_once __DIR__ . '/../Models/Jadwal.php';
+require_once __DIR__ . '/../Models/TahunAjaran.php';
+require_once __DIR__ . '/../Models/Siswa.php';
+require_once __DIR__ . '/../Models/Nilai.php';
+require_once __DIR__ . '/../Models/Kelas.php';
+require_once __DIR__ . '/../Models/Mapel.php';
+
 use App\Models\Jadwal;
-use App\Models\TahunAjaran;
-use App\Models\Siswa;
-use App\Models\Nilai;
 use App\Models\Kelas;
 use App\Models\Mapel;
-use App\Core\Flash;
+use App\Models\Nilai;
+use App\Models\Siswa;
+use App\Models\TahunAjaran;
 
 class NilaiController extends Controller
 {
-    public function create()
+    public function __construct()
     {
         if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'Guru') {
-            Flash::set('error', 'Anda tidak memiliki akses ke halaman ini.');
-            $this->redirect('/login');
-            return;
+            $this->redirect('/dashboard')->with('error', 'Anda tidak memiliki akses ke halaman ini.');
+            exit;
         }
+    }
 
+    public function create()
+    {
         $guru_id = $_SESSION['user']['guru_id'];
+        
         if (!isset($_SESSION['tahun_ajaran_aktif'])) {
-            Flash::set('error', 'Tidak ada tahun ajaran yang aktif saat ini.');
-            $this->redirect('/dashboard');
+            $this->redirect('/dashboard')->with('error', 'Tidak ada tahun ajaran yang aktif saat ini.');
             return;
         }
         
         $tahun_id = $_SESSION['tahun_ajaran_aktif']['tahun_id'];
 
-        $data['jadwal'] = Jadwal::getKelasMapelByGuru($guru_id, $tahun_id);
-        $data['page_title'] = "Input Nilai - Pilih Kelas & Mata Pelajaran";
-
-        $this->view('nilai/create', $data);
+        $this->view('nilai/create', [
+            'title' => 'Input Nilai - Pilih Kelas & Mata Pelajaran',
+            'jadwal' => Jadwal::getKelasMapelByGuru($guru_id, $tahun_id)
+        ]);
     }
 
     public function input()
     {
-        if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'Guru') {
-            Flash::set('error', 'Anda tidak memiliki akses ke halaman ini.');
-            $this->redirect('/login');
-            return;
-        }
-
         if (!isset($_GET['kelas_id']) || !isset($_GET['mapel_id'])) {
-            Flash::set('error', 'Parameter kelas atau mata pelajaran tidak valid.');
-            $this->redirect('/nilai/create');
+            $this->redirect('/nilai/create')->with('error', 'Parameter kelas atau mata pelajaran tidak valid.');
             return;
         }
 
@@ -54,33 +56,29 @@ class NilaiController extends Controller
         $mapel_id = $_GET['mapel_id'];
         $tahun_id = $_SESSION['tahun_ajaran_aktif']['tahun_id'];
 
-        $data['kelas'] = Kelas::find($kelas_id);
-        $data['mapel'] = Mapel::find($mapel_id);
-        $data['siswa'] = Siswa::getByKelas($kelas_id);
-        $data['nilai'] = Nilai::getByKelasMapel($kelas_id, $mapel_id, $tahun_id);
-        $data['page_title'] = "Input Nilai - " . $data['kelas']['nama_kelas'] . " - " . $data['mapel']['nama_mapel'];
-        $data['kelas_id'] = $kelas_id;
-        $data['mapel_id'] = $mapel_id;
+        $kelas = Kelas::find($kelas_id);
+        $mapel = Mapel::find($mapel_id);
 
-        if (!$data['kelas'] || !$data['mapel']) {
-            Flash::set('error', 'Data kelas atau mapel tidak ditemukan.');
-            $this->redirect('/nilai/create');
+        if (!$kelas || !$mapel) {
+            $this->redirect('/nilai/create')->with('error', 'Data kelas atau mapel tidak ditemukan.');
             return;
         }
         
-        $this->view('nilai/input', $data);
+        $this->view('nilai/input', [
+            'title' => "Input Nilai - " . $kelas['nama_kelas'] . " - " . $mapel['nama_mapel'],
+            'kelas' => $kelas,
+            'mapel' => $mapel,
+            'siswa' => Siswa::getByKelas($kelas_id),
+            'nilai' => Nilai::getByKelasMapel($kelas_id, $mapel_id, $tahun_id),
+            'kelas_id' => $kelas_id,
+            'mapel_id' => $mapel_id
+        ]);
     }
 
     public function store()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->redirect('/');
-            return;
-        }
-
-        if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'Guru') {
-            Flash::set('error', 'Anda tidak memiliki akses untuk melakukan aksi ini.');
-            $this->redirect('/login');
             return;
         }
 
@@ -102,11 +100,9 @@ class NilaiController extends Controller
         }
 
         if (Nilai::saveBatch($dataToSave)) {
-            Flash::set('success', 'Nilai berhasil disimpan.');
+            $this->redirect("/nilai/input?kelas_id={$kelas_id}&mapel_id={$mapel_id}")->with('success', 'Nilai berhasil disimpan.');
         } else {
-            Flash::set('error', 'Gagal menyimpan nilai.');
+            $this->redirect("/nilai/input?kelas_id={$kelas_id}&mapel_id={$mapel_id}")->with('error', 'Gagal menyimpan nilai.');
         }
-
-        $this->redirect("/nilai/input?kelas_id={$kelas_id}&mapel_id={$mapel_id}");
     }
 }
