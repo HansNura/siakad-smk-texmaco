@@ -209,7 +209,7 @@ class Nilai extends Model
 
     /**
      * Ambil rekap nilai untuk Wali Kelas (per Kelas)
-     * Join: siswa, mapel, nilai untuk validasi
+     * Join: siswa, mapel, jadwal, guru untuk validasi
      */
     public static function getRekapByKelas($kelas_id, $tahun_id)
     {
@@ -224,7 +224,8 @@ class Nilai extends Model
                         $instance->table n
                         JOIN siswa s ON n.siswa_id = s.siswa_id
                         JOIN mata_pelajaran m ON n.mapel_id = m.mapel_id
-                        JOIN guru g ON m.guru_id = g.guru_id
+                        JOIN jadwal_pelajaran j ON n.mapel_id = j.mapel_id AND n.tahun_id = j.tahun_id
+                        JOIN guru g ON j.guru_id = g.guru_id
                     WHERE
                         s.kelas_id = :kelas_id
                         AND n.tahun_id = :tahun_id
