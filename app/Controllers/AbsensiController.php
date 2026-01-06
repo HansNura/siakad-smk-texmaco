@@ -52,10 +52,10 @@ class AbsensiController extends Controller
         $hariIni = ENUM["HARI"][$todayEnglish] ?? "Minggu";
 
         // 4. Fetch Schedules
-        $jadwal = Jadwal::getByGuru(
+        $jadwal = Jadwal::getJadwalGuru(
             $guru["guru_id"],
-            $hariIni,
-            $activeTahun["tahun_id"]
+            $activeTahun["tahun_id"],
+            $hariIni
         );
 
         // Check submission status for each schedule
@@ -110,7 +110,7 @@ class AbsensiController extends Controller
         if ($absensi) {
             if (
                 $absensi["status_validasi"] === "Valid" ||
-                $absensi["status_validasi"] === "Draft"
+                $absensi["status_validasi"] === "Pending"
             ) {
                 $this->redirect("absensi")->with(
                     "info",
@@ -295,12 +295,22 @@ class AbsensiController extends Controller
     public function validationProcess()
     {
         $absensi_id = $_POST["absensi_id"];
-        $action = $_POST["action"]; // 'approve' or 'reject'
+        $action = $_POST["action"];
 
-        if (!$absensi_id || !$action) {
+        // 1. Ambil Data Absensi & Jadwal untuk tahu ini Kelas berapa
+        $absensi = Absensi::findWithDetails($absensi_id);
+        if (!$absensi) {
+            /* Error handling */
+        }
+
+        // 2. Cek Otoritas: Apakah user login adalah Wali Kelas dari kelas ini?
+        $guru = Guru::findByUserId($_SESSION["user_id"]);
+        $kelas = Kelas::getByWaliKelas($guru["guru_id"]);
+
+        if (!$kelas || $kelas["kelas_id"] != $absensi["kelas_id"]) {
             $this->redirect("absensi/validasi")->with(
                 "error",
-                "Data tidak valid."
+                "Anda tidak berhak memvalidasi kelas ini."
             );
             exit();
         }

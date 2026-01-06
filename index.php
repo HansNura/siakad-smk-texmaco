@@ -22,7 +22,7 @@ require_once "app/Controllers/MapelController.php";
 require_once "app/Controllers/JadwalController.php";
 require_once "app/Controllers/PlottingController.php";
 require_once "app/Controllers/AbsensiController.php";
-require_once "app/Controllers/ValidasiController.php";
+
 require_once "app/Controllers/NilaiController.php";
 require_once "app/Controllers/ValidasiNilaiController.php";
 

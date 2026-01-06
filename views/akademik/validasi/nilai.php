@@ -34,7 +34,7 @@
                     <div class="alert alert-info" role="alert">
                         <strong>SIA-008 V2 - Alur Validasi:</strong> 
                         <ul class="mb-0">
-                            <li><strong>Data Ditampilkan:</strong> Hanya nilai dengan status "Submitted" (Draft tidak perlu validasi)</li>
+                            <li><strong>Data Ditampilkan:</strong> Hanya nilai dengan status "Submitted" (Pending tidak perlu validasi)</li>
                             <li><strong>Tombol Setuju:</strong> Ubah status jadi "Final" (terkunci, siap rapor)</li>
                             <li><strong>Tombol Revisi:</strong> Ubah status jadi "Revisi" + <strong>WAJIB</strong> isi catatan feedback</li>
                             <li>Catatan akan dilihat Guru Mapel - mereka perlu tahu apa yang harus diperbaiki</li>

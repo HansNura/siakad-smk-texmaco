@@ -26,7 +26,7 @@ try {
     }
 
     // 2. Modify ENUM
-    $sql2 = "ALTER TABLE `absensi` MODIFY COLUMN `status_validasi` ENUM('Draft','Valid','Rejected') DEFAULT 'Draft'";
+    $sql2 = "ALTER TABLE `absensi` MODIFY COLUMN `status_validasi` ENUM('Pending','Valid','Rejected') DEFAULT 'Pending'";
     $conn->exec($sql2);
     echo "ENUM status_validasi updated.\n";
 

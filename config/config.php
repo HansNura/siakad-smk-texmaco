@@ -14,7 +14,7 @@ define("ENUM", [
     "STATUS" => [
         "Belum Input" => "Belum Input",
         "Valid" => "Valid",
-        "Draft" => "Draft",
+        "Pending" => "Pending",
         "Rejected" => "Rejected",
     ],
     "STATUS_KEHADIRAN" => [

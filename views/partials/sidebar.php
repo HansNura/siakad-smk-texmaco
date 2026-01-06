@@ -42,6 +42,12 @@
             </a>
             <ul class="nav nav-treeview">
                 <li class="nav-item">
+                    <a href="<?php echo BASE_URL; ?>/users" class="nav-link">
+                        <i class="nav-icon bi bi-people"></i>
+                        <p>Data User</p>
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a href="<?php echo BASE_URL; ?>/siswa" class="nav-link">
                         <i class="nav-icon bi bi-people"></i>
                         <p>Data Siswa</p>
@@ -90,7 +96,7 @@
                 </li>
                 <li class="nav-item">
                     <a href="<?php echo BASE_URL; ?>/plotting" class="nav-link">
-                        <i class="nav-icon bi bi-people-fill"></i>
+                        <i class="nav-icon bi bi-calendar3"></i>
                         <p>Plotting Siswa</p>
                     </a>
                 </li>
@@ -107,13 +113,13 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="<?php echo BASE_URL; ?>/nilai/create" class="nav-link">
+                    <a href="<?php echo BASE_URL; ?>/nilai" class="nav-link">
                         <i class="nav-icon bi bi-pen-fill"></i>
                         <p>Input Nilai</p>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="<?php echo BASE_URL; ?>/validasi-nilai" class="nav-link">
+                    <a href="<?php echo BASE_URL; ?>/nilai/validasi" class="nav-link">
                         <i class="nav-icon bi bi-pen-fill"></i>
                         <p>Validasi Nilai</p>
                     </a>

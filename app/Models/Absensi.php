@@ -26,33 +26,33 @@ class Absensi extends Model
 
             if ($revise) {
                 $resultAbsensi = Absensi::update($absensiId, [
-                    "jadwal_id" => $headerData["jadwal_id"],
-                    "status_validasi" => "Draft",
+                    "status_validasi" => "Pending",
                     "catatan_harian" => $headerData["catatan_harian"],
                 ]);
             } else {
                 $resultAbsensi = Absensi::create([
                     "jadwal_id" => $headerData["jadwal_id"],
                     "tanggal" => $headerData["tanggal"],
-                    "status_validasi" => "Draft",
+                    "status_validasi" => "Pending",
                     "catatan_harian" => $headerData["catatan_harian"],
                 ]);
             }
 
-            $message = $revise ? "mengubah" : "menyimpan";
-
             if (!$resultAbsensi["status"]) {
                 throw new \Exception(
-                    "Gagal $message data siswa: " . $resultAbsensi["error"]
+                    "Gagal menyimpan header absensi: " . $resultAbsensi["error"]
                 );
-                exit();
-            }
-
-            if ($revise) {
-                DetailAbsensi::delete($absensiId);
             }
 
             $absensiId = $absensiId ?? $resultAbsensi["lastInsertId"];
+
+            if ($revise) {
+                $instance = new static();
+                $sqlDelete =
+                    "DELETE FROM detail_absensi WHERE absensi_id = :aid";
+                $stmt = $instance->conn->prepare($sqlDelete);
+                $stmt->execute([":aid" => $absensiId]);
+            }
 
             foreach ($dataAbsensiMany as &$dataAbsensi) {
                 $dataAbsensi["absensi_id"] = $absensiId;
@@ -62,10 +62,9 @@ class Absensi extends Model
 
             if (!$resultDetailAbsensi["status"]) {
                 throw new \Exception(
-                    "Gagal $message data detail siswa: " .
+                    "Gagal menyimpan detail siswa: " .
                         $resultDetailAbsensi["error"]
                 );
-                exit();
             }
 
             Model::commit();
@@ -111,7 +110,7 @@ class Absensi extends Model
                   JOIN mata_pelajaran m ON j.mapel_id = m.mapel_id
                   JOIN guru g ON j.guru_id = g.guru_id
                   WHERE j.kelas_id = :kelas_id
-                  AND a.status_validasi = 'Draft'
+                  AND a.status_validasi = 'Pending'
                   ORDER BY a.tanggal DESC, j.jam_mulai ASC";
 
         $stmt = $instance->conn->prepare($query);
@@ -123,52 +122,18 @@ class Absensi extends Model
     public static function getDetails($absensi_id)
     {
         $instance = new static();
-        // Join with Siswa to get names
         $query = "SELECT 
-                        d.*, 
-                        s.nis, 
-                        s.nama_lengkap
-                    FROM detail_absensi d
-                    JOIN siswa s ON d.siswa_id = s.siswa_id
-                    WHERE d.detail_id IN (
-                        SELECT MAX(sub_d.detail_id)
-                        FROM detail_absensi sub_d
-                        WHERE sub_d.absensi_id = :absensi_id
-                        GROUP BY sub_d.siswa_id
-                    )
-                    ORDER BY s.nama_lengkap ASC;";
+                    d.*, 
+                    s.nis, 
+                    s.nama_lengkap
+                FROM detail_absensi d
+                JOIN siswa s ON d.siswa_id = s.siswa_id
+                WHERE d.absensi_id = :absensi_id
+                ORDER BY s.nama_lengkap ASC";
 
         $stmt = $instance->conn->prepare($query);
         $stmt->execute([":absensi_id" => $absensi_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    // Update Validation Status
-    public static function updateStatus($absensi_id, $status, $alasan = null)
-    {
-        $instance = new static();
-
-        $query =
-            "UPDATE " . $instance->table . " SET status_validasi = :status";
-        $params = [":status" => $status, ":absensi_id" => $absensi_id];
-
-        if ($status === "Rejected") {
-            $query .= ", alasan_penolakan = :alasan";
-            $params[":alasan"] = $alasan;
-        } else {
-            // Reset reason if valid? Or keep history? Usually reset if Valid.
-            $query .= ", alasan_penolakan = NULL";
-        }
-
-        $query .= " WHERE absensi_id = :absensi_id";
-
-        $stmt = $instance->conn->prepare($query);
-        try {
-            $stmt->execute($params);
-            return ["status" => true];
-        } catch (PDOException $e) {
-            return ["status" => false, "message" => $e->getMessage()];
-        }
     }
 
     public static function findWithDetails($absensi_id)

@@ -1,367 +1,184 @@
 <?php
 namespace App\Models;
 
-require_once __DIR__ . "/../Models/Model.php";
+require_once __DIR__ . '/Model.php';
+require_once __DIR__ . '/DetailNilai.php';
 
 use PDO;
-use PDOException;
+use Exception;
 
 class Nilai extends Model
 {
-    protected $table = "nilai";
-    protected $primaryKey = "nilai_id";
+    protected $table = 'nilai';
+    protected $primaryKey = 'nilai_id';
 
     /**
-     * Ambil nilai yang sudah disimpan berdasarkan Kelas & Mapel & Tahun
+     * FUNGSI UTAMA: Simpan Baru atau Revisi Nilai
+     * Menggunakan Database Transaction
      */
-    public static function getByKelasMapel($kelas_id, $mapel_id, $tahun_id)
+    public static function submit($headerData, $dataNilaiMany, $revise = false, $nilaiId = null)
     {
-        $instance = new static();
-        $query = "SELECT
-                        MAX(n.nilai_id) as id_terakhir, -- Mengambil ID paling baru
-                        s.nama_lengkap,
-                        s.siswa_id,
-                        n.mapel_id,
-                        n.tahun_id,
-                        MAX(n.nilai_tugas) as nilai_tugas, -- Mengambil nilai tugas terbesar (atau terakhir)
-                        MAX(n.nilai_uts) as nilai_uts,
-                        MAX(n.nilai_uas) as nilai_uas
-                    FROM
-                        nilai n
-                    JOIN siswa s ON
-                        n.siswa_id = s.siswa_id
-                    WHERE
-                        s.kelas_id = :kelas_id
-                        AND n.mapel_id = :mapel_id
-                        AND n.tahun_id = :tahun_id
-                    GROUP BY
-                        s.siswa_id, n.mapel_id, n.tahun_id -- Kunci pengelompokan
-                    ORDER BY
-                        s.nama_lengkap ASC;";
+        try {
+            // 1. Mulai Transaksi
+            Model::beginTransaction();
 
-        $stmt = $instance->conn->prepare($query);
-        $stmt->bindParam(":kelas_id", $kelas_id, PDO::PARAM_INT);
-        $stmt->bindParam(":mapel_id", $mapel_id, PDO::PARAM_INT);
-        $stmt->bindParam(":tahun_id", $tahun_id, PDO::PARAM_INT);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            // 2. Handle Header (Tabel 'nilai')
+            if ($revise) {
+                // Mode UPDATE/REVISI
+                // Kita update status jadi Draft lagi agar Wali Kelas bisa cek ulang
+                $resultHeader = self::update($nilaiId, [
+                    'status_validasi' => 'Draft',
+                    'updated_at'      => date('Y-m-d H:i:s')
+                    // Kita tidak ubah guru_id/mapel_id/kelas_id saat revisi demi keamanan data
+                ]);
+            } else {
+                // Mode CREATE BARU
+                $resultHeader = self::create([
+                    'tahun_id'        => $headerData['tahun_id'],
+                    'kelas_id'        => $headerData['kelas_id'],
+                    'mapel_id'        => $headerData['mapel_id'],
+                    'guru_id'         => $headerData['guru_id'],
+                    'status_validasi' => 'Draft'
+                ]);
+            }
+
+            if (!$resultHeader['status']) {
+                throw new Exception("Gagal menyimpan data utama nilai: " . $resultHeader['error']);
+            }
+
+            // Ambil ID (Entah dari update atau insert baru)
+            $nilaiId = $nilaiId ?? $resultHeader['lastInsertId'];
+
+            // 3. Handle Details (Tabel 'detail_nilai')
+            if ($revise) {
+                // Hapus detail lama agar bersih (mencegah duplikat)
+                DetailNilai::deleteByHeaderId($nilaiId);
+            }
+
+            // Siapkan data detail baru
+            foreach ($dataNilaiMany as &$detail) {
+                $detail['nilai_id'] = $nilaiId;
+                // Pastikan kalkulasi nilai akhir sudah dilakukan di Controller sebelum masuk sini,
+                // atau hitung ulang di sini jika ingin strict.
+                // $detail['nilai_akhir'] = ... (Opsional)
+            }
+
+            // Insert Batch (Banyak siswa sekaligus)
+            $resultDetail = DetailNilai::createMany($dataNilaiMany);
+
+            if (!$resultDetail['status']) {
+                throw new Exception("Gagal menyimpan detail nilai siswa: " . $resultDetail['error']);
+            }
+
+            // 4. Commit Transaksi (Simpan Permanen)
+            Model::commit();
+
+            return [
+                "status"  => true,
+                "message" => "Data nilai berhasil disimpan.",
+                "id"      => $nilaiId
+            ];
+
+        } catch (Exception $e) {
+            // 5. Rollback (Batalkan jika ada error)
+            Model::rollBack();
+
+            return [
+                "status"  => false,
+                "message" => $e->getMessage()
+            ];
+        }
     }
 
     /**
-     * Cek apakah siswa sudah memiliki nilai untuk mapel & tahun tertentu
+     * Cek apakah Nilai untuk (Mapel X, Kelas Y, Tahun Z) sudah pernah diinput?
+     * Dipakai di Controller create() untuk mencegah header ganda.
      */
-    public static function checkExisting($siswa_id, $mapel_id, $tahun_id)
+    public static function checkExisting($kelas_id, $mapel_id, $tahun_id)
     {
         $instance = new static();
-        $query = "SELECT * FROM $instance->table 
-                    WHERE siswa_id = :siswa_id 
-                    AND mapel_id = :mapel_id 
-                    AND tahun_id = :tahun_id";
-
+        $query = "SELECT * FROM {$instance->table} 
+                  WHERE kelas_id = :kelas_id 
+                  AND mapel_id = :mapel_id 
+                  AND tahun_id = :tahun_id";
+        
         $stmt = $instance->conn->prepare($query);
-        $stmt->bindParam(":siswa_id", $siswa_id, PDO::PARAM_INT);
-        $stmt->bindParam(":mapel_id", $mapel_id, PDO::PARAM_INT);
-        $stmt->bindParam(":tahun_id", $tahun_id, PDO::PARAM_INT);
-        $stmt->execute();
+        $stmt->execute([
+            ':kelas_id' => $kelas_id,
+            ':mapel_id' => $mapel_id,
+            ':tahun_id' => $tahun_id
+        ]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
     /**
-     * UPSERT Batch - Insert atau Update nilai untuk banyak siswa sekaligus
-     * Menggunakan MySQL ON DUPLICATE KEY UPDATE untuk efisiensi
+     * Ambil Header beserta Info Lengkapnya (Nama Guru, Nama Mapel, Nama Kelas)
+     * Dipakai untuk Judul Halaman Form atau Halaman Validasi
      */
-    public static function saveBatch($dataNilai)
+    public static function findWithInfo($nilai_id)
     {
         $instance = new static();
+        $query = "SELECT 
+                    n.*,
+                    k.nama_kelas,
+                    m.nama_mapel,
+                    g.nama_lengkap AS nama_guru,
+                    t.tahun,
+                    t.semester
+                  FROM {$instance->table} n
+                  JOIN kelas k ON n.kelas_id = k.kelas_id
+                  JOIN mata_pelajaran m ON n.mapel_id = m.mapel_id
+                  JOIN guru g ON n.guru_id = g.guru_id
+                  JOIN tahun_ajaran t ON n.tahun_id = t.tahun_id
+                  WHERE n.nilai_id = :nilai_id";
 
-        // Mulai transaction untuk keamanan data
-        try {
-            $instance->conn->beginTransaction();
-
-            // Query UPSERT (MySQL Syntax: ON DUPLICATE KEY UPDATE)
-            // UNIQUE KEY `unique_nilai` (`siswa_id`, `mapel_id`, `tahun_id`)
-            // memastikan hanya ada 1 record per siswa-mapel-tahun
-            $query = "INSERT INTO $instance->table 
-                        (siswa_id, mapel_id, tahun_id, nilai_tugas, nilai_uts, nilai_uas, nilai_akhir, status_validasi)
-                    VALUES 
-                        (:siswa_id, :mapel_id, :tahun_id, :tugas, :uts, :uas, :akhir, 'Draft')
-                    ON DUPLICATE KEY UPDATE 
-                        nilai_tugas = VALUES(nilai_tugas),
-                        nilai_uts = VALUES(nilai_uts),
-                        nilai_uas = VALUES(nilai_uas),
-                        nilai_akhir = VALUES(nilai_akhir),
-                        status_validasi = 'Draft'";
-
-            $stmt = $instance->conn->prepare($query);
-
-            foreach ($dataNilai as $row) {
-                // Validasi data
-                $tugas = (float) $row["tugas"];
-                $uts = (float) $row["uts"];
-                $uas = (float) $row["uas"];
-
-                // Cek range nilai (0-100)
-                if (
-                    $tugas < 0 ||
-                    $tugas > 100 ||
-                    $uts < 0 ||
-                    $uts > 100 ||
-                    $uas < 0 ||
-                    $uas > 100
-                ) {
-                    $instance->conn->rollBack();
-                    return [
-                        "status" => false,
-                        "message" => "Nilai harus berada dalam range 0-100",
-                    ];
-                }
-
-                // Hitung Nilai Akhir di Server Side (PENTING: Jangan dari client)
-                // Rumus: (Tugas*20%) + (UTS*30%) + (UAS*50%)
-                $akhir = $tugas * 0.2 + $uts * 0.3 + $uas * 0.5;
-
-                // Execute untuk setiap siswa
-                $stmt->execute([
-                    ":siswa_id" => (int) $row["siswa_id"],
-                    ":mapel_id" => (int) $row["mapel_id"],
-                    ":tahun_id" => (int) $row["tahun_id"],
-                    ":tugas" => $tugas,
-                    ":uts" => $uts,
-                    ":uas" => $uas,
-                    ":akhir" => $akhir,
-                ]);
-            }
-
-            $instance->conn->commit();
-            return [
-                "status" => true,
-                "message" => "Nilai berhasil disimpan",
-            ];
-        } catch (PDOException $e) {
-            $instance->conn->rollBack();
-            return [
-                "status" => false,
-                "message" => "Database error: " . $e->getMessage(),
-            ];
-        }
+        $stmt = $instance->conn->prepare($query);
+        $stmt->execute([':nilai_id' => $nilai_id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
     /**
-     * Ambil nilai final (untuk laporan/rapor)
+     * Ambil Detail Nilai Siswa (List Siswa + Angka Nilainya)
+     * Dipakai untuk mengisi Tabel di Form Edit atau View Validasi
      */
-    public static function getByTahun($tahun_id)
+    public static function getDetails($nilai_id)
     {
         $instance = new static();
-        $query = "SELECT
-                        n.*,
-                        s.nama_lengkap,
-                        s.nisn,
-                        m.nama_mapel,
-                        k.nama_kelas
-                    FROM
-                        $instance->table n
-                        JOIN siswa s ON n.siswa_id = s.siswa_id
-                        JOIN mata_pelajaran m ON n.mapel_id = m.mapel_id
-                        JOIN kelas k ON s.kelas_id = k.kelas_id
-                    WHERE
-                        n.tahun_id = :tahun_id
-                    ORDER BY
-                        k.nama_kelas ASC,
-                        s.nama_lengkap ASC,
-                        m.nama_mapel ASC";
+        $query = "SELECT 
+                    d.*,
+                    s.nis,
+                    s.nama_lengkap
+                  FROM detail_nilai d
+                  JOIN siswa s ON d.siswa_id = s.siswa_id
+                  WHERE d.nilai_id = :nilai_id
+                  ORDER BY s.nama_lengkap ASC";
 
         $stmt = $instance->conn->prepare($query);
-        $stmt->bindParam(":tahun_id", $tahun_id, PDO::PARAM_INT);
-        $stmt->execute();
+        $stmt->execute([':nilai_id' => $nilai_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**
-     * Update status validasi nilai (untuk Wali Kelas)
-     * Status: Draft, Revisi, Final
+     * Ambil Nilai yang statusnya 'Draft' (Pending) berdasarkan Kelas
+     * Dipakai di Dashboard Wali Kelas untuk Validasi
      */
-    public static function updateStatus($nilai_id, $status, $alasan = null)
+    public static function getPendingByKelas($kelas_id)
     {
         $instance = new static();
-
-        $query =
-            "UPDATE " . $instance->table . " SET status_validasi = :status";
-        $params = [":status" => $status, ":nilai_id" => $nilai_id];
-
-        if ($status === "Rejected") {
-            $query .= ", alasan_penolakan = :alasan";
-            $params[":alasan"] = $alasan;
-        } else {
-            // Reset reason if valid? Or keep history? Usually reset if Valid.
-            $query .= ", alasan_penolakan = NULL";
-        }
-
-        $query .= " WHERE absensi_id = :absensi_id";
+        $query = "SELECT 
+                    n.*, 
+                    m.nama_mapel, 
+                    g.nama_lengkap as nama_guru,
+                    n.updated_at as tgl_input
+                  FROM {$instance->table} n
+                  JOIN mata_pelajaran m ON n.mapel_id = m.mapel_id
+                  JOIN guru g ON n.guru_id = g.guru_id
+                  WHERE n.kelas_id = :kelas_id
+                  AND n.status_validasi = 'Draft'
+                  ORDER BY n.updated_at DESC";
 
         $stmt = $instance->conn->prepare($query);
-        try {
-            $stmt->execute($params);
-            return ["status" => true];
-        } catch (PDOException $e) {
-            return ["status" => false, "message" => $e->getMessage()];
-        }
-    }
-
-    /**
-     * Cek apakah nilai sudah dikunci (status = Final)
-     * Jika dikunci, Guru tidak bisa edit lagi
-     */
-    public static function isLocked($siswa_id, $mapel_id, $tahun_id)
-    {
-        $instance = new static();
-        $query = "SELECT status_validasi FROM $instance->table 
-                    WHERE siswa_id = :siswa_id 
-                    AND mapel_id = :mapel_id 
-                    AND tahun_id = :tahun_id";
-
-        $stmt = $instance->conn->prepare($query);
-        $stmt->bindParam(":siswa_id", $siswa_id, PDO::PARAM_INT);
-        $stmt->bindParam(":mapel_id", $mapel_id, PDO::PARAM_INT);
-        $stmt->bindParam(":tahun_id", $tahun_id, PDO::PARAM_INT);
-        $stmt->execute();
-
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $result && $result["status_validasi"] === "Final";
-    }
-
-    /**
-     * Ambil rekap nilai untuk Wali Kelas (per Kelas)
-     * Join: siswa, mapel, jadwal, guru untuk validasi
-     */
-    public static function getRekapByKelas($kelas_id, $tahun_id)
-    {
-        $instance = new static();
-        $query = "SELECT
-                        n.*,
-                        s.nama_lengkap,
-                        s.nisn,
-                        m.nama_mapel,
-                        g.nama_guru
-                    FROM
-                        $instance->table n
-                        JOIN siswa s ON n.siswa_id = s.siswa_id
-                        JOIN mata_pelajaran m ON n.mapel_id = m.mapel_id
-                        JOIN jadwal_pelajaran j ON n.mapel_id = j.mapel_id AND n.tahun_id = j.tahun_id
-                        JOIN guru g ON j.guru_id = g.guru_id
-                    WHERE
-                        s.kelas_id = :kelas_id
-                        AND n.tahun_id = :tahun_id
-                    ORDER BY
-                        m.nama_mapel ASC,
-                        s.nama_lengkap ASC";
-
-        $stmt = $instance->conn->prepare($query);
-        $stmt->bindParam(":kelas_id", $kelas_id, PDO::PARAM_INT);
-        $stmt->bindParam(":tahun_id", $tahun_id, PDO::PARAM_INT);
-        $stmt->execute();
+        $stmt->execute([':kelas_id' => $kelas_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    /**
-     * Ambil nilai dengan filter status tertentu (SIA-008 V2)
-     * Untuk Wali Kelas: hanya tampilkan status 'Submitted'
-     */
-    public static function getByStatus(
-        $kelas_id,
-        $tahun_id,
-        $status = "Submitted"
-    ) {
-        $instance = new static();
-        $query = "SELECT
-                        n.*,
-                        s.nama_lengkap,
-                        s.nisn,
-                        m.nama_mapel,
-                        g.nama_guru
-                    FROM
-                        $instance->table n
-                        JOIN siswa s ON n.siswa_id = s.siswa_id
-                        JOIN mata_pelajaran m ON n.mapel_id = m.mapel_id
-                        JOIN guru g ON m.guru_id = g.guru_id
-                    WHERE
-                        s.kelas_id = :kelas_id
-                        AND n.tahun_id = :tahun_id
-                        AND n.status_validasi = :status
-                    ORDER BY
-                        m.nama_mapel ASC,
-                        s.nama_lengkap ASC";
-
-        $stmt = $instance->conn->prepare($query);
-        $stmt->bindParam(":kelas_id", $kelas_id, PDO::PARAM_INT);
-        $stmt->bindParam(":tahun_id", $tahun_id, PDO::PARAM_INT);
-        $stmt->bindParam(":status", $status, PDO::PARAM_STR);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    /**
-     * Update status + catatan revisi (SIA-008 V2)
-     * Digunakan oleh Wali Kelas saat memberikan feedback revisi
-     */
-    public static function updateStatusWithNote(
-        $nilai_id,
-        $status,
-        $catatan = null
-    ) {
-        $instance = new static();
-
-        if ($status === "Revisi" && empty($catatan)) {
-            return [
-                "status" => false,
-                "message" => "Catatan revisi wajib diisi jika menolak!",
-            ];
-        }
-
-        $query = "UPDATE $instance->table 
-                 SET status_validasi = :status, 
-                     catatan_revisi = :catatan
-                 WHERE nilai_id = :nilai_id";
-
-        $stmt = $instance->conn->prepare($query);
-        $stmt->bindParam(":status", $status, PDO::PARAM_STR);
-        $stmt->bindParam(":catatan", $catatan, PDO::PARAM_STR);
-        $stmt->bindParam(":nilai_id", $nilai_id, PDO::PARAM_INT);
-
-        try {
-            $stmt->execute();
-            return [
-                "status" => true,
-                "message" => "Status berhasil diupdate",
-            ];
-        } catch (PDOException $e) {
-            return [
-                "status" => false,
-                "message" => "Database error: " . $e->getMessage(),
-            ];
-        }
-    }
-
-    /**
-     * Cek apakah nilai dalam kelas sudah ada yang status 'Submitted' atau 'Final'
-     * Digunakan untuk validasi: Guru tidak bisa submit kalau ada yang sudah Submitted
-     */
-    public static function hasSubmittedOrFinal($kelas_id, $mapel_id, $tahun_id)
-    {
-        $instance = new static();
-        $query = "SELECT COUNT(*) as cnt FROM $instance->table n
-                    JOIN siswa s ON n.siswa_id = s.siswa_id
-                    WHERE s.kelas_id = :kelas_id
-                    AND n.mapel_id = :mapel_id
-                    AND n.tahun_id = :tahun_id
-                    AND n.status_validasi IN ('Submitted', 'Final')";
-
-        $stmt = $instance->conn->prepare($query);
-        $stmt->bindParam(":kelas_id", $kelas_id, PDO::PARAM_INT);
-        $stmt->bindParam(":mapel_id", $mapel_id, PDO::PARAM_INT);
-        $stmt->bindParam(":tahun_id", $tahun_id, PDO::PARAM_INT);
-        $stmt->execute();
-
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $result["cnt"] > 0;
     }
 }

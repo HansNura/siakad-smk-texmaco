@@ -25,7 +25,7 @@ CREATE TABLE `absensi`  (
   `absensi_id` int(11) NOT NULL AUTO_INCREMENT,
   `jadwal_id` int(11) NOT NULL,
   `tanggal` date NOT NULL,
-  `status_validasi` enum('Draft','Valid','Rejected') CHARACTER SET utf8mb4 COLLATE utf8mb4_uca1400_ai_ci NULL DEFAULT 'Draft',
+  `status_validasi` enum('Pending','Valid','Rejected') CHARACTER SET utf8mb4 COLLATE utf8mb4_uca1400_ai_ci NULL DEFAULT 'Pending',
   `catatan_harian` text CHARACTER SET utf8mb4 COLLATE utf8mb4_uca1400_ai_ci NULL DEFAULT NULL,
   PRIMARY KEY (`absensi_id`) USING BTREE,
   INDEX `jadwal_id`(`jadwal_id` ASC) USING BTREE,
@@ -223,7 +223,7 @@ CREATE TABLE `nilai`  (
   `nilai_uts` decimal(5, 2) NULL DEFAULT 0.00,
   `nilai_uas` decimal(5, 2) NULL DEFAULT 0.00,
   `nilai_akhir` decimal(5, 2) NULL DEFAULT 0.00 COMMENT 'Hasil kalkulasi otomatis',
-  `status_validasi` enum('Draft','Final') CHARACTER SET utf8mb4 COLLATE utf8mb4_uca1400_ai_ci NULL DEFAULT 'Draft',
+  `status_validasi` enum('Pending','Final') CHARACTER SET utf8mb4 COLLATE utf8mb4_uca1400_ai_ci NULL DEFAULT 'Pending',
   PRIMARY KEY (`nilai_id`) USING BTREE,
   INDEX `siswa_id`(`siswa_id` ASC) USING BTREE,
   INDEX `mapel_id`(`mapel_id` ASC) USING BTREE,
@@ -236,9 +236,9 @@ CREATE TABLE `nilai`  (
 -- ----------------------------
 -- Records of nilai
 -- ----------------------------
-INSERT INTO `nilai` VALUES (1, 1, 1, 2, 90.00, 88.00, 95.00, 91.40, 'Draft');
-INSERT INTO `nilai` VALUES (2, 2, 1, 2, 75.00, 70.00, 75.00, 73.50, 'Draft');
-INSERT INTO `nilai` VALUES (3, 3, 1, 2, 50.00, 40.00, 45.00, 45.00, 'Draft');
+INSERT INTO `nilai` VALUES (1, 1, 1, 2, 90.00, 88.00, 95.00, 91.40, 'Pending');
+INSERT INTO `nilai` VALUES (2, 2, 1, 2, 75.00, 70.00, 75.00, 73.50, 'Pending');
+INSERT INTO `nilai` VALUES (3, 3, 1, 2, 50.00, 40.00, 45.00, 45.00, 'Pending');
 
 -- ----------------------------
 -- Table structure for riwayat_cetak

@@ -54,7 +54,7 @@ ob_start(); ?>
                                 <td><?php echo htmlspecialchars(
                                     $row["nama_guru"]
                                 ); ?></td>
-                                <td><span class="badge bg-warning text-dark">Draft</span></td>
+                                <td><span class="badge bg-warning text-dark">Pending</span></td>
                                 <td class="text-center">
                                     <a href="<?php echo BASE_URL; ?>/absensi/validasi/review?absensi_id=<?php echo $row[
     "absensi_id"

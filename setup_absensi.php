@@ -19,7 +19,7 @@ try {
       `absensi_id` int(11) NOT NULL AUTO_INCREMENT,
       `jadwal_id` int(11) NOT NULL,
       `tanggal` date NOT NULL,
-      `status_validasi` enum('Draft','Valid','Rejected') DEFAULT 'Draft',
+      `status_validasi` enum('Pending','Valid','Rejected') DEFAULT 'Pending',
       `catatan_harian` text,
       PRIMARY KEY (`absensi_id`),
       KEY `idx_jadwal` (`jadwal_id`),

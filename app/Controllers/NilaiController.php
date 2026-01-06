@@ -2,335 +2,358 @@
 namespace App\Controllers;
 
 require_once __DIR__ . "/../Models/Nilai.php";
+require_once __DIR__ . "/../Models/DetailNilai.php";
 require_once __DIR__ . "/../Models/Jadwal.php";
+require_once __DIR__ . "/../Models/Kelas.php";
 require_once __DIR__ . "/../Models/Siswa.php";
 require_once __DIR__ . "/../Models/TahunAjaran.php";
 require_once __DIR__ . "/../Models/Guru.php";
 require_once __DIR__ . "/../Models/Mapel.php";
-require_once __DIR__ . "/../Models/Kelas.php";
 require_once __DIR__ . "/Controller.php";
 
+use App\Models\Model;
 use App\Models\Nilai;
+use App\Models\Kelas;
+use App\Models\Guru;
 use App\Models\Jadwal;
 use App\Models\Siswa;
 use App\Models\TahunAjaran;
-use App\Models\Guru;
 use App\Models\Mapel;
-use App\Models\Kelas;
 
 class NilaiController extends Controller
 {
     /**
-     * FASE 1: Menampilkan pilihan Kelas & Mapel yang diajar Guru
-     * 
-     * Guru login → klik "Input Nilai" → melihat dropdown kelas yang diajarnya
-     * 
-     * Query: Cari semua jadwal pelajaran guru ini di tahun ajaran aktif
-     * Ambil unique kombinasi: Kelas + Mapel
+     * HALAMAN UTAMA GURU:
+     * Menampilkan daftar Kelas & Mapel yang diajar untuk dipilih.
      */
-    public function create()
+    public function index()
     {
-        // 1. Tentukan Tahun Ajaran Aktif
+        // 1. Cek Tahun Ajaran Aktif
         $activeTahun = TahunAjaran::getActive();
         if (!$activeTahun) {
-            setAlert("error", "Belum ada Tahun Ajaran aktif.");
-            return $this->redirect("dashboard");
+            $this->redirect("dashboard")->with(
+                "error",
+                "Belum ada Tahun Ajaran aktif."
+            );
+            exit();
         }
 
-        // 2. Identifikasi Guru
-        $guru = Guru::where("user_id", "=", $_SESSION["user_id"])->first();
+        // 2. Identifikasi Guru yang Login
+        $guru = Guru::where("user_id", $_SESSION["user_id"])->first();
         if (!$guru) {
-            setAlert("error", "Data Guru tidak ditemukan.");
-            return $this->redirect("dashboard");
+            $this->redirect("dashboard")->with(
+                "error",
+                "Data Guru tidak ditemukan."
+            );
+            exit();
         }
 
-        // 3. Query Jadwal Guru di Tahun Aktif
-        // Ambil semua jadwal pelajaran guru ini dengan detail kelas & mapel
-        $jadwal = Jadwal::getByGuruWithDetails($guru["guru_id"], $activeTahun["tahun_id"]);
+        // 3. Ambil Daftar Kelas & Mapel yang diajar (DISTINCT)
+        // Kita pakai fungsi yang sudah kita perbaiki di Jadwal.php sebelumnya
+        $listMengajar = Jadwal::getListKelasMapelGuru(
+            $guru["guru_id"],
+            $activeTahun["tahun_id"]
+        );
 
-        // 4. Jika tidak ada jadwal, tampilkan pesan
-        if (!$jadwal) {
-            setAlert("info", "Anda tidak memiliki jadwal mengajar di tahun ajaran ini.");
-            return $this->redirect("dashboard");
-        }
+        // 4. Cek Status Input Nilai untuk setiap item
+        foreach ($listMengajar as &$item) {
+            $existing = Nilai::checkExisting(
+                $item["kelas_id"],
+                $item["mapel_id"],
+                $activeTahun["tahun_id"]
+            );
 
-        // 5. Buat array unique (kelas + mapel) untuk dropdown
-        $kelasMapelList = [];
-        foreach ($jadwal as $j) {
-            $key = $j["kelas_id"] . "_" . $j["mapel_id"];
-            if (!isset($kelasMapelList[$key])) {
-                $kelasMapelList[$key] = [
-                    "jadwal_id"  => $j["jadwal_id"],
-                    "kelas_id"   => $j["kelas_id"],
-                    "mapel_id"   => $j["mapel_id"],
-                    "nama_kelas" => $j["nama_kelas"],
-                    "nama_mapel" => $j["nama_mapel"]
-                ];
+            if ($existing) {
+                $item["status_nilai"] = $existing["status_validasi"]; // Draft/Submitted/Final
+                $item["nilai_id"] = $existing["nilai_id"];
+            } else {
+                $item["status_nilai"] = "Belum Input";
+                $item["nilai_id"] = null;
             }
         }
 
         $data = [
-            "title"           => "Pilih Kelas & Mapel untuk Input Nilai",
-            "kelasMapelList"  => array_values($kelasMapelList), // reset index
-            "activeTahun"     => $activeTahun
+            "title" => "Input Nilai Siswa",
+            "listMengajar" => $listMengajar,
+            "tahun" => $activeTahun,
+        ];
+
+        $this->view("akademik/nilai/index", $data);
+    }
+
+    /**
+     * HALAMAN FORM INPUT:
+     * Menampilkan tabel input nilai untuk satu kelas.
+     */
+    public function create()
+    {
+        // Validasi Parameter URL
+        $kelas_id = $_GET["kelas_id"] ?? null;
+        $mapel_id = $_GET["mapel_id"] ?? null;
+
+        if (!$kelas_id || !$mapel_id) {
+            $this->redirect("nilai")->with("error", "Parameter tidak lengkap.");
+            exit();
+        }
+
+        $activeTahun = TahunAjaran::getActive();
+
+        // Ambil Info Header (Nama Kelas & Mapel)
+        $kelas = Kelas::find($kelas_id);
+        $mapel = Mapel::find($mapel_id); // Asumsi ada Model Mapel
+
+        // Cek apakah Data Nilai sudah pernah diinput?
+        $existingHeader = Nilai::checkExisting(
+            $kelas_id,
+            $mapel_id,
+            $activeTahun["tahun_id"]
+        );
+
+        // Default Data
+        $siswaList = Siswa::getByKelas($kelas_id);
+        $savedDetails = []; // Untuk menampung nilai yang sudah tersimpan (jika ada)
+        $catatanRevisi = null;
+
+        // LOGIKA EDIT / REVISI
+        if ($existingHeader) {
+            // Jika sudah FINAL, blokir edit
+            if ($existingHeader["status_validasi"] === "Final") {
+                $this->redirect("nilai")->with(
+                    "info",
+                    "Nilai sudah Final dan tidak dapat diubah."
+                );
+                exit();
+            }
+
+            // Jika Draft/Revisi, ambil detailnya untuk diisi ke form
+            $details = Nilai::getDetails($existingHeader["nilai_id"]);
+            foreach ($details as $d) {
+                $savedDetails[$d["siswa_id"]] = [
+                    "tugas" => $d["nilai_tugas"],
+                    "uts" => $d["nilai_uts"],
+                    "uas" => $d["nilai_uas"],
+                    "akhir" => $d["nilai_akhir"],
+                ];
+            }
+            $catatanRevisi = $existingHeader["catatan_revisi"];
+        }
+
+
+
+
+        $data = [
+            "title" =>
+                "Form Nilai: " .
+                $kelas["nama_kelas"] .
+                " - " .
+                $mapel["nama_mapel"],
+            "kelas" => $kelas,
+            "mapel" => $mapel,
+            "tahun" => $activeTahun,
+            "siswa" => $siswaList,
+            "existing" => $existingHeader, // null jika belum ada
+            "savedDetails" => $savedDetails,
+            "catatanRevisi" => $catatanRevisi,
         ];
 
         $this->view("akademik/nilai/create", $data);
     }
 
     /**
-     * FASE 2: Menampilkan Form Matriks Nilai
-     * 
-     * Guru memilih kelas & mapel → sistem tampilkan tabel siswa dengan input nilai
-     * 
-     * Query:
-     * 1. Ambil daftar siswa di kelas
-     * 2. Ambil nilai yang sudah pernah disimpan sebelumnya (jika ada)
-     */
-    public function input()
-    {
-        // Ambil parameter dari query string
-        $kelas_id = $_GET["kelas_id"] ?? null;
-        $mapel_id = $_GET["mapel_id"] ?? null;
-
-        if (!$kelas_id || !$mapel_id) {
-            setAlert("error", "Parameter Kelas atau Mapel tidak valid.");
-            return $this->redirect("nilai/create");
-        }
-
-        // 1. Tentukan Tahun Ajaran Aktif
-        $activeTahun = TahunAjaran::getActive();
-        if (!$activeTahun) {
-            setAlert("error", "Belum ada Tahun Ajaran aktif.");
-            return $this->redirect("dashboard");
-        }
-
-        // 2. Identifikasi Guru (untuk verifikasi kepemilikan)
-        $guru = Guru::where("user_id", "=", $_SESSION["user_id"])->first();
-        if (!$guru) {
-            setAlert("error", "Data Guru tidak ditemukan.");
-            return $this->redirect("dashboard");
-        }
-
-        // 3. Verifikasi guru mengajar mapel di kelas ini (dari jadwal)
-        $jadwal = Jadwal::where("guru_id", "=", $guru["guru_id"])
-                         ->where("kelas_id", "=", $kelas_id)
-                         ->where("mapel_id", "=", $mapel_id)
-                         ->where("tahun_id", "=", $activeTahun["tahun_id"])
-                         ->first();
-
-        if (!$jadwal) {
-            setAlert("error", "Anda tidak mengajar mapel ini di kelas tersebut.");
-            return $this->redirect("nilai/create");
-        }
-
-        // 4. Query Paralel: Ambil Siswa & Nilai yang sudah ada
-        // Query 1: Daftar siswa di kelas
-        $siswa = Siswa::getByKelas($kelas_id);
-
-        // Query 2: Nilai yang sudah pernah disimpan
-        $nilaiExisting = Nilai::getByKelasMapel($kelas_id, $mapel_id, $activeTahun["tahun_id"]);
-
-        // 5. Map nilai existing ke array keyed by siswa_id untuk mudah diakses di view
-        $nilaiMap = [];
-        foreach ($nilaiExisting as $n) {
-            $nilaiMap[$n["siswa_id"]] = $n;
-        }
-
-        // 6. Ambil detail kelas & mapel untuk ditampilkan
-        $kelas = Kelas::find($kelas_id);
-        $mapel = Mapel::find($mapel_id);
-
-        if (!$kelas || !$mapel) {
-            setAlert("error", "Data Kelas atau Mapel tidak ditemukan.");
-            return $this->redirect("nilai/create");
-        }
-
-        if (!$siswa) {
-            setAlert("info", "Tidak ada siswa di kelas ini.");
-            // Tetap tampilkan form kosong agar guru bisa menyimpan nilai 0
-        }
-
-        $data = [
-            "title"        => "Input Nilai - " . $kelas["nama_kelas"] . " | " . $mapel["nama_mapel"],
-            "siswa"        => $siswa ?? [],
-            "nilaiMap"     => $nilaiMap,
-            "kelas_id"     => $kelas_id,
-            "mapel_id"     => $mapel_id,
-            "tahun_id"     => $activeTahun["tahun_id"],
-            "nama_kelas"   => $kelas["nama_kelas"],
-            "nama_mapel"   => $mapel["nama_mapel"],
-            "activeTahun"  => $activeTahun
-        ];
-
-        $this->view("akademik/nilai/input", $data);
-    }
-
-    /**
-     * FASE 3: Simpan Draft (SIA-006 V2)
-     * 
-     * Guru submit form → server:
-     * 1. Validasi range nilai (0-100)
-     * 2. Kalkulasi Nilai Akhir = (Tugas*20%) + (UTS*30%) + (UAS*50%)
-     * 3. UPSERT ke database dengan status = 'Draft'
-     * 4. Form tetap EDITABLE sampai Guru klik "Ajukan Validasi"
-     * 
-     * SIA-006 V2: Jika action='submit', setelah simpan langsung proses submission
+     * PROSES SIMPAN (STORE):
+     * Menghitung nilai akhir dan menyimpan ke DB.
      */
     public function store()
     {
-        // Ambil POST data
-        $kelas_id = $_POST["kelas_id"] ?? null;
-        $mapel_id = $_POST["mapel_id"] ?? null;
-        $tahun_id = $_POST["tahun_id"] ?? null;
-        $action   = $_POST["action"] ?? "draft";  // NEW: pilih action (draft/submit)
+        $activeTahun = TahunAjaran::getActive();
+        $guru = Guru::where("user_id", $_SESSION["user_id"])->first();
 
-        // Ambil array nilai per siswa dari form
-        // Format: nilai[siswa_id] = ['tugas' => x, 'uts' => y, 'uas' => z]
-        $nilaiData = $_POST["nilai"] ?? [];
+        // Ambil Input
+        $kelas_id = $_POST["kelas_id"];
+        $mapel_id = $_POST["mapel_id"];
+        $inputNilai = $_POST["nilai"] ?? []; // Array [siswa_id => [tugas, uts, uas]]
 
-        if (!$kelas_id || !$mapel_id || !$tahun_id) {
-            setAlert("error", "Data Kelas, Mapel, atau Tahun tidak valid.");
-            return $this->redirect("nilai/create");
-        }
-        
-
-        if (empty($nilaiData)) {
-            setAlert("error", "Tidak ada data nilai yang dikirim.");
-            return $this->redirect("nilai/input?kelas_id=$kelas_id&mapel_id=$mapel_id");
+        if (empty($inputNilai)) {
+            $this->redirect("nilai")->with(
+                "error",
+                "Tidak ada data nilai yang dikirim."
+            );
+            exit();
         }
 
-        // 1. Verifikasi guru mengajar mapel ini (keamanan)
-        $guru = Guru::where("user_id", "=", $_SESSION["user_id"])->first();
-        $jadwal = Jadwal::where("guru_id", "=", $guru["guru_id"])
-                         ->where("kelas_id", "=", $kelas_id)
-                         ->where("mapel_id", "=", $mapel_id)
-                         ->where("tahun_id", "=", $tahun_id)
-                         ->first();
+        // Siapkan Data Header
+        $headerData = [
+            "tahun_id" => $activeTahun["tahun_id"],
+            "kelas_id" => $kelas_id,
+            "mapel_id" => $mapel_id,
+            "guru_id" => $guru["guru_id"],
+        ];
 
-        if (!$jadwal) {
-            setAlert("error", "Anda tidak berhak mengisi nilai untuk mapel ini.");
-            return $this->redirect("nilai/create");
-        }
+        // Siapkan Data Detail (Looping & Hitung)
+        $dataNilaiMany = [];
+        foreach ($inputNilai as $siswa_id => $skor) {
+            $tugas = floatval($skor["tugas"]);
+            $uts = floatval($skor["uts"]);
+            $uas = floatval($skor["uas"]);
 
-        // 1.5. SECURITY: Cek apakah ada nilai yang sudah dikunci (Final/Submitted)
-        // Jika Final: guru tidak boleh edit
-        // Jika Submitted: guru tidak boleh edit (harus Revisi dulu)
-        foreach ($nilaiData as $siswa_id => $nilai) {
-            if (Nilai::isLocked($siswa_id, $mapel_id, $tahun_id)) {
-                setAlert("error", "Nilai sudah difinalisasi oleh Wali Kelas. Anda tidak bisa mengubahnya lagi. Hubungi Wali Kelas untuk revisi.");
-                return $this->redirect("nilai/create");
-            }
-        }
+            // Rumus: Tugas 30%, UTS 30%, UAS 40%
+            $akhir = $tugas * 0.3 + $uts * 0.3 + $uas * 0.4;
 
-        // 2. Persiapkan data untuk batch save
-        $dataBatch = [];
-        foreach ($nilaiData as $siswa_id => $nilai) {
-            // Sanitasi input
-            $tugas = isset($nilai['tugas']) ? (float) $nilai['tugas'] : 0;
-            $uts   = isset($nilai['uts']) ? (float) $nilai['uts'] : 0;
-            $uas   = isset($nilai['uas']) ? (float) $nilai['uas'] : 0;
-
-            // Validasi range (0-100)
-            if ($tugas < 0 || $tugas > 100) {
-                setAlert("error", "Nilai Tugas harus 0-100. Cek siswa ID: $siswa_id");
-                return $this->redirect("nilai/input?kelas_id=$kelas_id&mapel_id=$mapel_id");
-            }
-            if ($uts < 0 || $uts > 100) {
-                setAlert("error", "Nilai UTS harus 0-100. Cek siswa ID: $siswa_id");
-                return $this->redirect("nilai/input?kelas_id=$kelas_id&mapel_id=$mapel_id");
-            }
-            if ($uas < 0 || $uas > 100) {
-                setAlert("error", "Nilai UAS harus 0-100. Cek siswa ID: $siswa_id");
-                return $this->redirect("nilai/input?kelas_id=$kelas_id&mapel_id=$mapel_id");
-            }
-
-            $dataBatch[] = [
-                'siswa_id' => (int) $siswa_id,
-                'mapel_id' => (int) $mapel_id,
-                'tahun_id' => (int) $tahun_id,
-                'tugas'    => $tugas,
-                'uts'      => $uts,
-                'uas'      => $uas
+            $dataNilaiMany[] = [
+                "siswa_id" => $siswa_id,
+                "nilai_tugas" => $tugas,
+                "nilai_uts" => $uts,
+                "nilai_uas" => $uas,
+                "nilai_akhir" => round($akhir, 2), // Bulatkan 2 desimal
             ];
         }
 
-        // 3. Simpan batch ke database (dengan UPSERT)
-        // Status = 'Draft' (form tetap editable)
-        $result = Nilai::saveBatch($dataBatch);
+        // Cek Update atau Insert Baru
+        $existing = Nilai::checkExisting(
+            $kelas_id,
+            $mapel_id,
+            $activeTahun["tahun_id"]
+        );
 
-        if ($result['status']) {
-            // SIA-006 V2: Jika action=submit, langsung proses pengajuan
-            if ($action === 'submit') {
-                return $this->submitToWali($kelas_id, $mapel_id, $tahun_id);
-            }
+        $revise = false;
+        $nilaiId = null;
 
-            setAlert("success", "Nilai berhasil disimpan (Draft). Anda masih bisa mengubahnya.");
-            return $this->redirect("nilai/create");
+        if ($existing) {
+            // Update mode
+            $revise = true;
+            $nilaiId = $existing["nilai_id"];
+        }
+
+        // Panggil Model (Transactional)
+        $result = Nilai::submit($headerData, $dataNilaiMany, $revise, $nilaiId);
+
+        if ($result["status"]) {
+            $this->redirect("nilai")->with(
+                "success",
+                "Nilai berhasil disimpan."
+            );
         } else {
-            setAlert("error", $result['message']);
-            return $this->redirect("nilai/input?kelas_id=$kelas_id&mapel_id=$mapel_id");
+            // Redirect back with error
+            $url = "nilai/create?kelas_id=$kelas_id&mapel_id=$mapel_id";
+            $this->redirect($url)->with("error", $result["message"]);
         }
     }
 
     /**
-     * Helper: Submit ke Wali Kelas (SIA-006 V2)
-     * Dipanggil dari store() ketika action='submit'
+     * DASHBOARD WALI KELAS:
+     * Melihat daftar nilai yang perlu divalidasi.
      */
-    private function submitToWali($kelas_id, $mapel_id, $tahun_id)
+    public function validationList()
     {
-        // Ambil semua nilai untuk kelas/mapel/tahun ini
-        $nilaiList = Nilai::getByKelasMapel($kelas_id, $mapel_id, $tahun_id);
+        $guru = Guru::findByUserId($_SESSION["user_id"]);
 
-        if (empty($nilaiList)) {
-            setAlert("error", "Belum ada data nilai yang disimpan. Silakan isi nilai terlebih dahulu.");
-            return $this->redirect("nilai/input?kelas_id=$kelas_id&mapel_id=$mapel_id");
+        // 1. Cek apakah dia Wali Kelas?
+        $kelasBinaan = Kelas::getByWaliKelas($guru["guru_id"]);
+
+        if (!$kelasBinaan) {
+            // Jika bukan wali kelas, tampilkan view kosong/info
+            $this->view("akademik/nilai/validationList", [
+                "title" => "Validasi Nilai",
+                "isWaliKelas" => false,
+                "pending" => [],
+            ]);
+            return;
         }
 
-        // Cek apakah ada nilai yang masih 0
-        foreach ($nilaiList as $n) {
-            if ($n['nilai_tugas'] == 0 || $n['nilai_uts'] == 0 || $n['nilai_uas'] == 0) {
-                setAlert("error", "Ada nilai yang masih kosong/0. Lengkapi data sebelum mengajukan: " . htmlspecialchars($n['nama_lengkap']));
-                return $this->redirect("nilai/input?kelas_id=$kelas_id&mapel_id=$mapel_id");
-            }
-        }
-        
-        Nilai::sumbitToWali($kelas_id, $mapel_id, $tahun_id);
-        // Update semua nilai jadi status 'Submitted' (hanya yang Draft)
-        $this->db   = new Database();
-        $this->conn = $this->db->getConnection();
+        // 2. Ambil Nilai yang statusnya 'Draft' milik kelas binaannya
+        $pending = Nilai::getPendingByKelas($kelasBinaan["kelas_id"]);
 
-        $query = "UPDATE nilai 
-                 SET status_validasi = 'Submitted'
-                 WHERE siswa_id IN (
-                    SELECT siswa_id FROM siswa WHERE kelas_id = :kelas_id
-                 )
-                 AND mapel_id = :mapel_id
-                 AND tahun_id = :tahun_id
-                 AND status_validasi = 'Draft'";
-                 
+        $data = [
+            "title" => "Validasi Nilai - Kelas " . $kelasBinaan["nama_kelas"],
+            "isWaliKelas" => true,
+            "kelas" => $kelasBinaan,
+            "pending" => $pending,
+        ];
 
-        try {
-            $stmt = $this->conn->prepare($query);
-            $stmt->bindParam(':kelas_id', $kelas_id, PDO::PARAM_INT);
-            $stmt->bindParam(':mapel_id', $mapel_id, PDO::PARAM_INT);
-            $stmt->bindParam(':tahun_id', $tahun_id, PDO::PARAM_INT);
-            $stmt->execute();
-
-            setAlert("success", "✓ Nilai berhasil diajukan ke Wali Kelas! Form terkunci menunggu validasi.");
-            return $this->redirect("nilai/create");
-        } catch (PDOException $e) {
-            setAlert("error", "Gagal mengajukan nilai: " . $e->getMessage());
-            return $this->redirect("nilai/input?kelas_id=$kelas_id&mapel_id=$mapel_id");
-        }
+        $this->view("akademik/nilai/validationList", $data);
     }
 
+    /**
+     * DETAIL VALIDASI:
+     * Melihat rincian nilai siswa sebelum di-approve.
+     */
+    public function validationReview()
+    {
+        $nilai_id = $_GET["nilai_id"] ?? null;
+        if (!$nilai_id) {
+            $this->redirect("nilai/validasi");
+            exit();
+        }
+
+        // Ambil Header & Detail
+        $header = Nilai::findWithInfo($nilai_id);
+        $details = Nilai::getDetails($nilai_id);
+
+        if (!$header) {
+            $this->redirect("nilai/validasi")->with(
+                "error",
+                "Data tidak ditemukan."
+            );
+            exit();
+        }
+
+        $data = [
+            "title" => "Review Nilai: " . $header["nama_mapel"],
+            "header" => $header,
+            "details" => $details,
+        ];
+
+        $this->view("akademik/nilai/validationReview", $data);
+    }
 
     /**
-     * Helper: Validasi apakah nilai dalam range yang valid
+     * PROSES APPROVE / REJECT
      */
-    private function validateNilai($nilai)
+    public function validationProcess()
     {
-        return is_numeric($nilai) && $nilai >= 0 && $nilai <= 100;
+        $nilai_id = $_POST["nilai_id"];
+        $action = $_POST["action"]; // 'approve' or 'reject'
+        $alasan = $_POST["catatan_revisi"] ?? null;
+
+        // 1. Validasi Keamanan (Apakah benar Wali Kelas dari kelas ini?)
+        $nilai = Nilai::find($nilai_id);
+        $guru = Guru::findByUserId($_SESSION["user_id"]);
+        $kelasBinaan = Kelas::getByWaliKelas($guru["guru_id"]);
+
+        if (!$kelasBinaan || $kelasBinaan["kelas_id"] != $nilai["kelas_id"]) {
+            $this->redirect("nilai/validasi")->with(
+                "error",
+                "Akses ditolak. Anda bukan Wali Kelas ini."
+            );
+            exit();
+        }
+
+        // 2. Tentukan Status Baru
+        // Jika Approve -> Final
+        // Jika Reject -> Draft (Tapi dikasih catatan revisi)
+        // Catatan: Anda bisa pakai status 'Rejected' di enum jika mau lebih eksplisit.
+        // Sesuai diskusi Absensi, kita pakai logika: Reject = Balik ke Draft + Note.
+
+        $statusBaru = $action === "approve" ? "Final" : "Draft"; // Atau 'Rejected' jika enum mendukung
+
+        $updateData = [
+            "status_validasi" => $statusBaru,
+            "catatan_revisi" => $action === "reject" ? $alasan : null,
+        ];
+
+        $result = Nilai::update($nilai_id, $updateData);
+
+        if ($result["status"]) {
+            $msg =
+                $action === "approve"
+                    ? "Nilai berhasil divalidasi (Final)."
+                    : "Nilai dikembalikan ke Guru Mapel (Revisi).";
+            $this->redirect("nilai/validasi")->with("success", $msg);
+        } else {
+            $this->redirect("nilai/validasi")->with(
+                "error",
+                "Gagal memproses validasi."
+            );
+        }
     }
 }

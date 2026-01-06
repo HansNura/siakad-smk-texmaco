@@ -322,34 +322,48 @@ $routes->post(
     ["auth", "role:Guru"]
 ); // Aksi Approve/Reject
 
-// FASE 4: INPUT NILAI AKADEMIK
-// Sequence SIA-006 (V2 - Draft + Submission)
+// --- Bagian GURU MAPEL (Input Nilai) ---
+// 1. Halaman List Mapel yang diajar (Mirip Absensi Index)
+$routes->get(
+    "/nilai",
+    [NilaiController::class, "index"],
+    ["auth", "role:Guru"]
+);
+
+// 2. Form Input Nilai (Mirip Absensi Create)
+// URL nanti: /nilai/create?kelas_id=1&mapel_id=2
 $routes->get(
     "/nilai/create",
     [NilaiController::class, "create"],
     ["auth", "role:Guru"]
 );
-$routes->get(
-    "/nilai/input",
-    [NilaiController::class, "input"],
-    ["auth", "role:Guru"]
-);
+
+// 3. Proses Simpan/Update Nilai (Mirip Absensi Store)
 $routes->post(
     "/nilai/store",
     [NilaiController::class, "store"],
     ["auth", "role:Guru"]
 );
 
-// FASE 4: VALIDASI NILAI AKADEMIK (Wali Kelas)
-// Sequence SIA-007
+// --- Bagian WALI KELAS (Validasi Nilai) ---
+// 4. List Pengajuan Nilai dari Guru Mapel (Mirip Absensi Validasi List)
 $routes->get(
-    "/validasi-nilai",
-    [ValidasiNilaiController::class, "index"],
+    "/nilai/validasi",
+    [NilaiController::class, "validationList"],
     ["auth", "role:Guru"]
 );
+
+// 5. Detail Nilai sebelum diapprove (Mirip Absensi Review)
+$routes->get(
+    "/nilai/validasi/review",
+    [NilaiController::class, "validationReview"],
+    ["auth", "role:Guru"]
+);
+
+// 6. Proses Approve/Reject (Mirip Absensi Process)
 $routes->post(
-    "/validasi-nilai/proses",
-    [ValidasiNilaiController::class, "proses"],
+    "/nilai/validasi/process",
+    [NilaiController::class, "validationProcess"],
     ["auth", "role:Guru"]
 );
 

@@ -31,7 +31,7 @@ CREATE TABLE `absensi` (
   `absensi_id` int(11) NOT NULL,
   `jadwal_id` int(11) NOT NULL,
   `tanggal` date NOT NULL,
-  `status_validasi` enum('Draft','Valid','Rejected') DEFAULT 'Draft',
+  `status_validasi` enum('Pending','Valid','Rejected') DEFAULT 'Pending',
   `catatan_harian` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci ROW_FORMAT=DYNAMIC;
 
@@ -220,7 +220,7 @@ CREATE TABLE `nilai` (
   `nilai_uts` decimal(5,2) DEFAULT 0.00,
   `nilai_uas` decimal(5,2) DEFAULT 0.00,
   `nilai_akhir` decimal(5,2) DEFAULT 0.00 COMMENT 'Hasil kalkulasi otomatis',
-  `status_validasi` enum('Draft','Submitted','Revisi','Final') DEFAULT 'Draft',
+  `status_validasi` enum('Pending','Submitted','Revisi','Final') DEFAULT 'Pending',
   `catatan_revisi` TEXT NULL DEFAULT NULL COMMENT 'Feedback dari Wali Kelas saat revisi',
   PRIMARY KEY (`nilai_id`),
   UNIQUE KEY `unique_nilai` (`siswa_id`, `mapel_id`, `tahun_id`),
@@ -234,9 +234,9 @@ CREATE TABLE `nilai` (
 --
 
 INSERT INTO `nilai` (`nilai_id`, `siswa_id`, `mapel_id`, `tahun_id`, `nilai_tugas`, `nilai_uts`, `nilai_uas`, `nilai_akhir`, `status_validasi`) VALUES
-(1, 1, 1, 2, 90.00, 88.00, 95.00, 91.40, 'Draft'),
-(2, 2, 1, 2, 75.00, 70.00, 75.00, 73.50, 'Draft'),
-(3, 3, 1, 2, 50.00, 40.00, 45.00, 45.00, 'Draft');
+(1, 1, 1, 2, 90.00, 88.00, 95.00, 91.40, 'Pending'),
+(2, 2, 1, 2, 75.00, 70.00, 75.00, 73.50, 'Pending'),
+(3, 3, 1, 2, 50.00, 40.00, 45.00, 45.00, 'Pending');
 
 -- --------------------------------------------------------
 

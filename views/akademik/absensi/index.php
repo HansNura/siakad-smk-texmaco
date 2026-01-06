@@ -55,7 +55,7 @@ ob_start(); ?>
                                 <td>
                                     <?php
                                     $badgeClass = "bg-secondary";
-                                    if ($j["status_absensi"] === "Draft") {
+                                    if ($j["status_absensi"] === "Pending") {
                                         $badgeClass = "bg-warning text-dark";
                                     } elseif (
                                         $j["status_absensi"] === "Valid"
