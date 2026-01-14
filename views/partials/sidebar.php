@@ -124,6 +124,12 @@
                         <p>Validasi Nilai</p>
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a href="<?php echo BASE_URL; ?>/rapor" class="nav-link">
+                        <i class="nav-icon bi bi-journal-text"></i>
+                        <p>Rapor</p>
+                    </a>
+                </li>
             </ul>
         </li>
     </ul>

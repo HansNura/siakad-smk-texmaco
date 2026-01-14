@@ -245,6 +245,7 @@ class AbsensiController extends Controller
 
         // 3. Get Pending Absensi
         $pending = Absensi::getPendingByKelas($kelas["kelas_id"]);
+        dd($pending);
         if (empty($pending)) {
             setAlert(
                 "info",
@@ -306,7 +307,8 @@ class AbsensiController extends Controller
         // 2. Cek Otoritas: Apakah user login adalah Wali Kelas dari kelas ini?
         $guru = Guru::findByUserId($_SESSION["user_id"]);
         $kelas = Kelas::getByWaliKelas($guru["guru_id"]);
-
+        
+        dd([$kelas, $absensi]);
         if (!$kelas || $kelas["kelas_id"] != $absensi["kelas_id"]) {
             $this->redirect("absensi/validasi")->with(
                 "error",

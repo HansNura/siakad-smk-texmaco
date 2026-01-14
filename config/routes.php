@@ -14,6 +14,7 @@ use App\Controllers\TahunAjaranController;
 use App\Controllers\UserController;
 use App\Controllers\ValidasiController;
 use App\Controllers\ValidasiNilaiController;
+use App\Controllers\LaporanController;
 
 use App\Core\Route;
 
@@ -367,18 +368,15 @@ $routes->post(
     ["auth", "role:Guru"]
 );
 
+// REPORTING - Rapor
+$routes->get("/rapor", [LaporanController::class, "index"], ["auth", "role:Guru"]);
 
+// Input Catatan Wali Kelas (Sikap & Akademik)
+$routes->get("/rapor/catatan", [LaporanController::class, "inputCatatan"], ["auth", "role:Guru"]);
+$routes->post("/rapor/catatan/store", [LaporanController::class, "storeCatatan"], ["auth", "role:Guru"]);
 
-// REPORTING - Rapor/Cetak
-$routes->get(
-    "/rapor",
-    [LaporanController::class, "index"],
-    ["auth"]
-);
-$routes->get(
-    "/rapor/print",
-    [LaporanController::class, "print"],
-    ["auth"]
-);
+// Cetak
+$routes->get("/rapor/print", [LaporanController::class, "print"], ["auth", "role:Guru"]);
+
 
 return $routes;

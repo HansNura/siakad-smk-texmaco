@@ -145,6 +145,7 @@ class Absensi extends Model
                             j.jam_mulai,
                             j.jam_selesai,
                             m.nama_mapel,
+                            k.kelas_id,
                             k.nama_kelas,
                             g.nama_lengkap AS nama_guru
                         FROM
