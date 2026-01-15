@@ -27,6 +27,7 @@ require_once "app/Controllers/AbsensiController.php";
 require_once "app/Controllers/NilaiController.php";
 
 require_once "app/Controllers/LaporanController.php";
+require_once "app/Controllers/ProfilController.php";
 
 $routes = require_once "config/routes.php";
 

@@ -191,39 +191,42 @@ class Nilai extends Model
      * @return array dengan keys per row: mapel_id, nama_mapel, kelompok, nilai_tugas, nilai_uts, nilai_uas, nilai_akhir, status_validasi
      */
     public static function getKHS($siswa_id, $tahun_id = null)
-    {
-        $instance = new static();
-        
-        // Jika tahun_id tidak diberikan, ambil tahun yang aktif
-        if ($tahun_id === null) {
-            $tahun = self::getActiveTahunAjaran();
-            $tahun_id = $tahun['tahun_id'] ?? 2; // Default fallback ke tahun_id 2
-        }
-        
-        $query = "SELECT
-                    n.nilai_id,
-                    n.mapel_id,
-                    m.nama_mapel,
-                    m.kelompok,
-                    m.kkm,
-                    n.nilai_tugas,
-                    n.nilai_uts,
-                    n.nilai_uas,
-                    n.nilai_akhir,
-                    n.status_validasi
-                  FROM {$instance->table} n
-                  JOIN mata_pelajaran m ON n.mapel_id = m.mapel_id
-                  WHERE n.siswa_id = :siswa_id
-                  AND n.tahun_id = :tahun_id
-                  ORDER BY m.kelompok ASC, m.nama_mapel ASC";
-
-        $stmt = $instance->conn->prepare($query);
-        $stmt->bindParam(':siswa_id', $siswa_id, PDO::PARAM_INT);
-        $stmt->bindParam(':tahun_id', $tahun_id, PDO::PARAM_INT);
-        $stmt->execute();
-
-        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?? [];
+{
+    $instance = new static();
+    
+    // Jika tahun_id tidak diberikan, ambil tahun yang aktif
+    if ($tahun_id === null) {
+        $tahun = self::getActiveTahunAjaran();
+        $tahun_id = $tahun['tahun_id'] ?? 2; 
     }
+    
+    // Perbaikan Query: Tambahkan JOIN ke detail_nilai (dn)
+    $query = "SELECT
+                n.nilai_id,
+                n.mapel_id,
+                m.nama_mapel,
+                m.kelompok,
+                m.kkm,
+                dn.nilai_tugas,   -- Ambil dari detail_nilai
+                dn.nilai_uts,     -- Ambil dari detail_nilai
+                dn.nilai_uas,     -- Ambil dari detail_nilai
+                dn.nilai_akhir,   -- Ambil dari detail_nilai
+                n.status_validasi
+              FROM {$instance->table} n
+              JOIN detail_nilai dn ON n.nilai_id = dn.nilai_id
+              JOIN mata_pelajaran m ON n.mapel_id = m.mapel_id
+              WHERE dn.siswa_id = :siswa_id  -- Filter siswa ada di tabel detail
+              AND n.tahun_id = :tahun_id
+              ORDER BY m.kelompok ASC, m.nama_mapel ASC";
+
+    $stmt = $instance->conn->prepare($query);
+    $stmt->bindParam(':siswa_id', $siswa_id, PDO::PARAM_INT);
+    $stmt->bindParam(':tahun_id', $tahun_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC) ?? [];
+}
+
 
     /**
      * Helper: Ambil Tahun Ajaran yang Aktif

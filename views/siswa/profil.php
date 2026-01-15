@@ -4,31 +4,8 @@
  * Menampilkan: Biodata, Statistik Kehadiran, Daftar Nilai
  */
 
-$layout = 'main';
-include BASE_PATH . '/views/layouts/' . $layout . '.php';
-?>
+ob_start(); ?>
 
-<div class="app-main flex-column flex-row-fluid" id="kt_app_main">
-    <div class="d-flex flex-column flex-column-fluid">
-        <!-- Page Title -->
-        <div id="kt_app_page_title" class="app-page-title px-15 py-4">
-            <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
-                <h1 class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0">
-                    <i class="bi bi-person-circle me-2"></i> Profil Saya
-                </h1>
-                <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
-                    <li class="breadcrumb-item text-muted">
-                        <a href="<?php echo BASE_URL; ?>/dashboard" class="text-muted text-hover-primary">Dashboard</a>
-                    </li>
-                    <li class="breadcrumb-item">
-                        <span class="bullet bg-gray-400 w-5px h-2px"></span>
-                    </li>
-                    <li class="breadcrumb-item text-muted">Profil Saya</li>
-                </ul>
-            </div>
-        </div>
-
-        <!-- Page Content -->
         <div id="kt_app_content" class="app-content flex-column-fluid">
             <div id="kt_app_content_container" class="app-container container-fluid">
 
@@ -48,8 +25,12 @@ include BASE_PATH . '/views/layouts/' . $layout . '.php';
                                         <div class="mb-3">
                                             <i class="bi bi-person-fill text-primary" style="font-size: 4rem;"></i>
                                         </div>
-                                        <h5 class="fw-bold text-dark"><?php echo htmlspecialchars($profileData['nama_lengkap'] ?? '-'); ?></h5>
-                                        <p class="text-muted small">NIS: <?php echo htmlspecialchars($profileData['nis'] ?? '-'); ?></p>
+                                        <h5 class="fw-bold text-dark"><?php echo htmlspecialchars(
+                                            $profileData["nama_lengkap"] ?? "-"
+                                        ); ?></h5>
+                                        <p class="text-muted small">NIS: <?php echo htmlspecialchars(
+                                            $profileData["nis"] ?? "-"
+                                        ); ?></p>
                                     </div>
 
                                     <!-- Kolom Tengah & Kanan: Data Diri -->
@@ -58,22 +39,39 @@ include BASE_PATH . '/views/layouts/' . $layout . '.php';
                                             <div class="col-md-6">
                                                 <div class="mb-3">
                                                     <label class="form-label text-muted small fw-bold">NIS</label>
-                                                    <p class="text-dark fw-semibold"><?php echo htmlspecialchars($profileData['nis'] ?? '-'); ?></p>
+                                                    <p class="text-dark fw-semibold"><?php echo htmlspecialchars(
+                                                        $profileData["nis"] ??
+                                                            "-"
+                                                    ); ?></p>
                                                 </div>
                                                 <div class="mb-3">
                                                     <label class="form-label text-muted small fw-bold">NISN</label>
-                                                    <p class="text-dark fw-semibold"><?php echo htmlspecialchars($profileData['nisn'] ?? '-'); ?></p>
+                                                    <p class="text-dark fw-semibold"><?php echo htmlspecialchars(
+                                                        $profileData["nisn"] ??
+                                                            "-"
+                                                    ); ?></p>
                                                 </div>
                                                 <div class="mb-3">
                                                     <label class="form-label text-muted small fw-bold">Tanggal Lahir</label>
                                                     <p class="text-dark fw-semibold">
-                                                        <?php 
-                                                            if (!empty($profileData['tanggal_lahir'])) {
-                                                                echo date('d/m/Y', strtotime($profileData['tanggal_lahir']));
-                                                            } else {
-                                                                echo '-';
-                                                            }
-                                                        ?>
+                                                        <?php if (
+                                                            !empty(
+                                                                $profileData[
+                                                                    "tanggal_lahir"
+                                                                ]
+                                                            )
+                                                        ) {
+                                                            echo date(
+                                                                "d/m/Y",
+                                                                strtotime(
+                                                                    $profileData[
+                                                                        "tanggal_lahir"
+                                                                    ]
+                                                                )
+                                                            );
+                                                        } else {
+                                                            echo "-";
+                                                        } ?>
                                                     </p>
                                                 </div>
                                             </div>
@@ -83,19 +81,36 @@ include BASE_PATH . '/views/layouts/' . $layout . '.php';
                                                     <label class="form-label text-muted small fw-bold">Kelas</label>
                                                     <p class="text-dark fw-semibold">
                                                         <span class="badge bg-warning text-dark fs-7">
-                                                            <?php echo htmlspecialchars($profileData['nama_kelas'] ?? 'Belum Ditugaskan'); ?>
+                                                            <?php echo htmlspecialchars(
+                                                                $profileData[
+                                                                    "nama_kelas"
+                                                                ] ??
+                                                                    "Belum Ditugaskan"
+                                                            ); ?>
                                                         </span>
                                                     </p>
                                                 </div>
                                                 <div class="mb-3">
                                                     <label class="form-label text-muted small fw-bold">Jurusan</label>
-                                                    <p class="text-dark fw-semibold"><?php echo htmlspecialchars($profileData['jurusan'] ?? '-'); ?></p>
+                                                    <p class="text-dark fw-semibold"><?php echo htmlspecialchars(
+                                                        $profileData[
+                                                            "jurusan"
+                                                        ] ?? "-"
+                                                    ); ?></p>
                                                 </div>
                                                 <div class="mb-3">
                                                     <label class="form-label text-muted small fw-bold">Tahun Ajaran</label>
                                                     <p class="text-dark fw-semibold">
-                                                        <?php echo htmlspecialchars($profileData['tahun'] ?? '-'); ?> 
-                                                        (<?php echo htmlspecialchars($profileData['semester'] ?? '-'); ?>)
+                                                        <?php echo htmlspecialchars(
+                                                            $profileData[
+                                                                "tahun"
+                                                            ] ?? "-"
+                                                        ); ?> 
+                                                        (<?php echo htmlspecialchars(
+                                                            $profileData[
+                                                                "semester"
+                                                            ] ?? "-"
+                                                        ); ?>)
                                                     </p>
                                                 </div>
                                             </div>
@@ -105,7 +120,10 @@ include BASE_PATH . '/views/layouts/' . $layout . '.php';
                                         <div class="row mt-3 border-top pt-3">
                                             <div class="col-md-12">
                                                 <label class="form-label text-muted small fw-bold">Alamat</label>
-                                                <p class="text-dark"><?php echo htmlspecialchars($profileData['alamat'] ?? '-'); ?></p>
+                                                <p class="text-dark"><?php echo htmlspecialchars(
+                                                    $profileData["alamat"] ??
+                                                        "-"
+                                                ); ?></p>
                                             </div>
                                         </div>
                                     </div>
@@ -127,12 +145,13 @@ include BASE_PATH . '/views/layouts/' . $layout . '.php';
                             </div>
                             <div class="card-body p-4">
                                 <?php
-                                    $hadir = $rekapAbsensi['hadir'] ?? 0;
-                                    $sakit = $rekapAbsensi['sakit'] ?? 0;
-                                    $izin = $rekapAbsensi['izin'] ?? 0;
-                                    $alpa = $rekapAbsensi['alpa'] ?? 0;
-                                    $total = $rekapAbsensi['total_pertemuan'] ?? 0;
-                                    $persentase = $rekapAbsensi['persentase_hadir'] ?? 0;
+                                $hadir = $rekapAbsensi["hadir"] ?? 0;
+                                $sakit = $rekapAbsensi["sakit"] ?? 0;
+                                $izin = $rekapAbsensi["izin"] ?? 0;
+                                $alpa = $rekapAbsensi["alpa"] ?? 0;
+                                $total = $rekapAbsensi["total_pertemuan"] ?? 0;
+                                $persentase =
+                                    $rekapAbsensi["persentase_hadir"] ?? 0;
                                 ?>
 
                                 <!-- Progress Kehadiran -->
@@ -189,22 +208,24 @@ include BASE_PATH . '/views/layouts/' . $layout . '.php';
 
                                 <!-- Status Badge -->
                                 <div class="mt-4">
-                                    <?php 
-                                        if ($persentase >= 90) {
-                                            $badgeClass = 'bg-success';
-                                            $status = 'Sangat Baik';
-                                        } elseif ($persentase >= 75) {
-                                            $badgeClass = 'bg-info';
-                                            $status = 'Baik';
-                                        } elseif ($persentase >= 60) {
-                                            $badgeClass = 'bg-warning';
-                                            $status = 'Cukup';
-                                        } else {
-                                            $badgeClass = 'bg-danger';
-                                            $status = 'Kurang';
-                                        }
-                                    ?>
-                                    <div class="alert alert-light-<?php echo str_replace('bg-', '', $badgeClass); ?> border-0 p-3 text-center">
+                                    <?php if ($persentase >= 90) {
+                                        $badgeClass = "bg-success";
+                                        $status = "Sangat Baik";
+                                    } elseif ($persentase >= 75) {
+                                        $badgeClass = "bg-info";
+                                        $status = "Baik";
+                                    } elseif ($persentase >= 60) {
+                                        $badgeClass = "bg-warning";
+                                        $status = "Cukup";
+                                    } else {
+                                        $badgeClass = "bg-danger";
+                                        $status = "Kurang";
+                                    } ?>
+                                    <div class="alert alert-light-<?php echo str_replace(
+                                        "bg-",
+                                        "",
+                                        $badgeClass
+                                    ); ?> border-0 p-3 text-center">
                                         <span class="badge <?php echo $badgeClass; ?> fw-bold fs-7">
                                             Status: <?php echo $status; ?>
                                         </span>
@@ -237,47 +258,98 @@ include BASE_PATH . '/views/layouts/' . $layout . '.php';
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <?php foreach ($listNilai as $nilai): ?>
+                                                <?php foreach (
+                                                    $listNilai
+                                                    as $nilai
+                                                ): ?>
                                                     <tr>
                                                         <td class="px-4 py-3">
-                                                            <div class="fw-bold text-dark"><?php echo htmlspecialchars($nilai['nama_mapel']); ?></div>
+                                                            <div class="fw-bold text-dark"><?php echo htmlspecialchars(
+                                                                $nilai[
+                                                                    "nama_mapel"
+                                                                ]
+                                                            ); ?></div>
                                                             <div class="text-muted small">
                                                                 Kelompok: 
                                                                 <span class="badge bg-light-secondary text-secondary fw-bold">
-                                                                    <?php echo htmlspecialchars($nilai['kelompok']); ?>
+                                                                    <?php echo htmlspecialchars(
+                                                                        $nilai[
+                                                                            "kelompok"
+                                                                        ]
+                                                                    ); ?>
                                                                 </span>
                                                             </div>
                                                         </td>
                                                         <td class="text-center py-3">
-                                                            <?php if ($nilai['is_draft']): ?>
+                                                            <?php if (
+                                                                $nilai[
+                                                                    "is_draft"
+                                                                ]
+                                                            ): ?>
                                                                 <span class="badge bg-light-warning text-warning fw-bold">-</span>
                                                             <?php else: ?>
-                                                                <span class="fw-bold text-dark"><?php echo number_format($nilai['nilai_tugas'], 2); ?></span>
+                                                                <span class="fw-bold text-dark"><?php echo number_format(
+                                                                    $nilai[
+                                                                        "nilai_tugas"
+                                                                    ],
+                                                                    2
+                                                                ); ?></span>
                                                             <?php endif; ?>
                                                         </td>
                                                         <td class="text-center py-3">
-                                                            <?php if ($nilai['is_draft']): ?>
+                                                            <?php if (
+                                                                $nilai[
+                                                                    "is_draft"
+                                                                ]
+                                                            ): ?>
                                                                 <span class="badge bg-light-warning text-warning fw-bold">-</span>
                                                             <?php else: ?>
-                                                                <span class="fw-bold text-dark"><?php echo number_format($nilai['nilai_uts'], 2); ?></span>
+                                                                <span class="fw-bold text-dark"><?php echo number_format(
+                                                                    $nilai[
+                                                                        "nilai_uts"
+                                                                    ],
+                                                                    2
+                                                                ); ?></span>
                                                             <?php endif; ?>
                                                         </td>
                                                         <td class="text-center py-3">
-                                                            <?php if ($nilai['is_draft']): ?>
+                                                            <?php if (
+                                                                $nilai[
+                                                                    "is_draft"
+                                                                ]
+                                                            ): ?>
                                                                 <span class="badge bg-light-warning text-warning fw-bold">-</span>
                                                             <?php else: ?>
-                                                                <span class="fw-bold text-dark"><?php echo number_format($nilai['nilai_uas'], 2); ?></span>
+                                                                <span class="fw-bold text-dark"><?php echo number_format(
+                                                                    $nilai[
+                                                                        "nilai_uas"
+                                                                    ],
+                                                                    2
+                                                                ); ?></span>
                                                             <?php endif; ?>
                                                         </td>
                                                         <td class="text-center py-3">
-                                                            <?php if ($nilai['is_draft']): ?>
+                                                            <?php if (
+                                                                $nilai[
+                                                                    "is_draft"
+                                                                ]
+                                                            ): ?>
                                                                 <span class="badge bg-light-warning text-warning fw-bold">-</span>
                                                             <?php else: ?>
-                                                                <span class="fw-bold text-dark"><?php echo number_format($nilai['nilai_akhir'], 2); ?></span>
+                                                                <span class="fw-bold text-dark"><?php echo number_format(
+                                                                    $nilai[
+                                                                        "nilai_akhir"
+                                                                    ],
+                                                                    2
+                                                                ); ?></span>
                                                             <?php endif; ?>
                                                         </td>
                                                         <td class="text-center py-3">
-                                                            <?php if ($nilai['is_draft']): ?>
+                                                            <?php if (
+                                                                $nilai[
+                                                                    "is_draft"
+                                                                ]
+                                                            ): ?>
                                                                 <span class="badge bg-light-warning">
                                                                     <i class="bi bi-clock"></i> Belum Rilis
                                                                 </span>
@@ -322,5 +394,11 @@ include BASE_PATH . '/views/layouts/' . $layout . '.php';
 
             </div>
         </div>
-    </div>
-</div>
+
+<?php
+$content = ob_get_clean();
+// Pastikan path ke layout main benar
+require_once __DIR__ . "/../layouts/main.php";
+
+
+?>
