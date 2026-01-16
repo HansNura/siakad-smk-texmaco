@@ -7,248 +7,238 @@ if (isset($_SESSION["flash"])):
 
     $flash = $_SESSION["flash"];
     $type = $flash["type"] ?? "info";
+    $title = $flash["title"] ?? ucfirst($type);
+    $message = $flash["message"] ?? "";
 
-    // Mapping SVG Icon berdasarkan Tipe
+    // Mapping Icon Modern (Bootstrap Icons path)
     $icons = [
         "success" =>
-            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>',
+            '<path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>',
         "info" =>
-            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>',
+            '<path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>',
         "warning" =>
-            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>',
+            '<path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>',
         "error" =>
-            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>',
+            '<path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"/>',
         "question" =>
-            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>',
+            '<path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.496 6.033h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286a.237.237 0 0 0 .241.247zm2.325 6.443c.61 0 1.029-.394 1.029-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94 0 .533.425.927 1.009.927z"/>',
     ];
-
-    $icon = $icons[$type] ?? $icons["info"];
+    $iconPath = $icons[$type] ?? $icons["info"];
     ?>
+
 <style>
-/* Container di pojok kanan atas */
-.flash-container {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    z-index: 9999;
-    font-family: system-ui, -apple-system, sans-serif;
-}
-
-/* Style Dasar Card */
-.flash {
-    display: flex;
-    align-items: flex-start;
-    background: #fff;
-    padding: 16px;
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    min-width: 320px;
-    max-width: 360px;
-    position: relative;
-    overflow: hidden;
-    border-left: 6px solid #ccc;
-
-    /* Animasi Masuk */
-    animation: slideInRight 0.5s ease forwards;
-
-    /* Transisi untuk animasi keluar */
-    transition: all 0.3s ease;
-    opacity: 1;
-    transform: translateX(0);
-}
-
-/* Animasi Masuk dari Kanan */
-@keyframes slideInRight {
-    from {
-        opacity: 0;
-        transform: translateX(100%);
+    /* Container Fixed */
+    .flash-container {
+        position: fixed;
+        top: 24px;
+        right: 24px;
+        z-index: 99999;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        pointer-events: none; /* Agar klik tembus ke belakang jika area kosong */
     }
 
-    to {
-        opacity: 1;
-        transform: translateX(0);
+    /* Kartu Flash */
+    .flash-card {
+        pointer-events: auto; /* Aktifkan klik pada kartu */
+        background: white;
+        min-width: 320px;
+        max-width: 400px;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px -5px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+        display: flex;
+        overflow: hidden;
+        position: relative;
+        animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        transform: translateX(120%);
+        border: 1px solid rgba(0,0,0,0.05);
     }
-}
 
-/* Kelas saat ditutup (Fade Out ke kanan) */
-.flash.closing {
-    opacity: 0;
-    transform: translateX(100%);
-    margin-top: -100px;
-    /* Supaya elemen bawah naik ke atas */
-}
+    .flash-card.closing {
+        animation: fadeOutRight 0.4s forwards;
+    }
 
-/* Bagian Icon SVG */
-.flash-icon {
-    margin-right: 12px;
-    margin-top: 2px;
-    width: 24px;
-    height: 24px;
-}
+    @keyframes slideInRight {
+        to { transform: translateX(0); }
+    }
+    @keyframes fadeOutRight {
+        to { transform: translateX(120%); opacity: 0; }
+    }
 
-.flash-icon svg {
-    width: 100%;
-    height: 100%;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-}
+    /* Strip Warna Kiri */
+    .flash-strip { width: 6px; flex-shrink: 0; }
+    
+    /* Content Area */
+    .flash-body {
+        padding: 16px 16px 16px 12px;
+        flex: 1;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+    }
 
-/* Bagian Text */
-.flash-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
+    /* Icon Box */
+    .flash-icon {
+        flex-shrink: 0;
+        width: 24px;
+        height: 24px;
+        margin-top: 2px;
+    }
 
-.flash-title {
-    font-weight: 700;
-    font-size: 16px;
-    color: #333;
-    margin-bottom: 4px;
-}
+    /* Texts */
+    .flash-text { flex: 1; }
+    .flash-title {
+        display: block;
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: #1e293b;
+        margin-bottom: 2px;
+    }
+    .flash-message {
+        display: block;
+        font-size: 0.875rem;
+        color: #64748b;
+        line-height: 1.5;
+    }
 
-.flash-message {
-    font-size: 14px;
-    color: #666;
-    line-height: 1.4;
-}
+    /* Close Button */
+    .flash-close {
+        background: transparent;
+        border: none;
+        color: #94a3b8;
+        cursor: pointer;
+        padding: 4px;
+        font-size: 1.2rem;
+        line-height: 1;
+        margin-left: 8px;
+        transition: color 0.2s;
+    }
+    .flash-close:hover { color: #334155; }
 
-/* Tombol X Close */
-.flash-close {
-    position: absolute;
-    top: 10px;
-    right: 12px;
-    font-size: 22px;
-    color: #999;
-    cursor: pointer;
-    line-height: 1;
-}
+    /* Progress Bar (Auto Dismiss) */
+    .flash-progress {
+        position: absolute;
+        bottom: 0; left: 0;
+        height: 3px;
+        background: rgba(0,0,0,0.1);
+        width: 100%;
+        transform-origin: left;
+    }
+    /* Hanya animasi progress jika BUKAN tipe question */
+    .flash-card:not(.type-question) .flash-progress {
+        animation: progressLinear 4s linear forwards;
+    }
 
-.flash-close:hover {
-    color: #333;
-}
+    @keyframes progressLinear {
+        from { transform: scaleX(1); }
+        to { transform: scaleX(0); }
+    }
 
-/* --- WARNA --- */
-.flash-success {
-    border-left-color: #2ecc71;
-}
+    /* COLOR THEMES */
+    .type-success .flash-strip { background: #10b981; }
+    .type-success .flash-icon { fill: #10b981; }
+    
+    .type-info .flash-strip { background: #3b82f6; }
+    .type-info .flash-icon { fill: #3b82f6; }
+    
+    .type-warning .flash-strip { background: #f59e0b; }
+    .type-warning .flash-icon { fill: #f59e0b; }
+    
+    .type-error .flash-strip { background: #ef4444; }
+    .type-error .flash-icon { fill: #ef4444; }
 
-.flash-success .flash-icon {
-    color: #2ecc71;
-}
+    .type-question .flash-strip { background: #8b5cf6; }
+    .type-question .flash-icon { fill: #8b5cf6; }
 
-.flash-info {
-    border-left-color: #3498db;
-}
-
-.flash-info .flash-icon {
-    color: #3498db;
-}
-
-.flash-warning {
-    border-left-color: #f1c40f;
-}
-
-.flash-warning .flash-icon {
-    color: #f1c40f;
-}
-
-.flash-error {
-    border-left-color: #e74c3c;
-}
-
-.flash-error .flash-icon {
-    color: #e74c3c;
-}
-
-.flash-question {
-    border-left-color: #8e44ad;
-}
-
-.flash-question .flash-icon {
-    color: #8e44ad;
-}
-
-/* --- TOMBOL AKSI (Question) --- */
-.flash-actions {
-    margin-top: 12px;
-    display: flex;
-    gap: 10px;
-}
-
-.flash-actions button {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 13px;
-    transition: 0.2s;
-}
-
-.btn-confirm {
-    background: #8e44ad;
-    color: #fff;
-}
-
-.btn-confirm:hover {
-    background: #732d91;
-}
-
-.btn-cancel {
-    background: #f0f0f0;
-    color: #333;
-}
-
-.btn-cancel:hover {
-    background: #e0e0e0;
-}
+    /* Question Buttons */
+    .flash-actions {
+        margin-top: 12px;
+        display: flex;
+        gap: 8px;
+    }
+    .btn-action {
+        padding: 6px 14px;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        transition: transform 0.1s;
+    }
+    .btn-action:active { transform: scale(0.96); }
+    
+    .btn-yes { background: #8b5cf6; color: white; }
+    .btn-yes:hover { background: #7c3aed; }
+    
+    .btn-no { background: #f1f5f9; color: #475569; }
+    .btn-no:hover { background: #e2e8f0; }
 </style>
 
 <div class="flash-container">
-    <div class="flash flash-<?php echo $type; ?>">
-        <div class="flash-icon">
-            <?php echo $icon; ?>
-        </div>
-        <div class="flash-content">
-            <span class="flash-title"><?php echo htmlspecialchars(
-                $flash["title"] ?? ""
-            ); ?></span>
-            <span class="flash-message"><?php echo htmlspecialchars(
-                $flash["message"]
-            ); ?></span>
-            <?php if ($type == "question"): ?>
-                <!-- code... -->
-            <div class="flash-actions">
-                <button class="btn-confirm" onclick="closeFlash(this)">Ya</button>
-                <button class="btn-cancel" onclick="closeFlash(this)">Tidak</button>
+    <div class="flash-card type-<?php echo $type; ?>" id="flashCard">
+        
+        <div class="flash-strip"></div>
+        
+        <div class="flash-body">
+            <svg class="flash-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+                <?php echo $iconPath; ?>
+            </svg>
+            
+            <div class="flash-text">
+                <span class="flash-title"><?php echo htmlspecialchars(
+                    $title
+                ); ?></span>
+                <span class="flash-message"><?php echo htmlspecialchars(
+                    $message
+                ); ?></span>
+
+                <?php if ($type === "question"): ?>
+                    <div class="flash-actions">
+                        <button class="btn-action btn-yes" onclick="confirmAction()">Ya, Lanjutkan</button>
+                        <button class="btn-action btn-no" onclick="dismissFlash()">Batal</button>
+                    </div>
+                <?php endif; ?>
             </div>
-            <?php endif; ?>
+
+            <button class="flash-close" onclick="dismissFlash()">&times;</button>
         </div>
-        <div class="flash-close" onclick="closeFlash(this)">&times;</div>
+
+        <?php if ($type !== "question"): ?>
+            <div class="flash-progress"></div>
+        <?php endif; ?>
     </div>
 </div>
 
 <script>
-function closeFlash(element) {
-    // Mencari elemen induk dengan class 'flash'
-    const flash = element.closest('.flash');
+    const flashCard = document.getElementById('flashCard');
 
-    // Menambahkan class 'closing' untuk memicu animasi CSS
-    flash.classList.add('closing');
+    function dismissFlash() {
+        if(!flashCard) return;
+        flashCard.classList.add('closing');
+        setTimeout(() => {
+            flashCard.remove();
+        }, 400); // Sesuai durasi animasi CSS
+    }
 
-    // Menunggu animasi selesai (300ms) baru menghapus elemen dari DOM
+    function confirmAction() {
+        // Logika konfirmasi kustom bisa ditambahkan di sini
+        // Misal submit form tertentu atau redirect
+        // Untuk sekarang kita hanya tutup saja
+        alert('Aksi dikonfirmasi!');
+        dismissFlash();
+    }
+
+    // Auto Dismiss (Kecuali Question)
+    <?php if ($type !== "question"): ?>
     setTimeout(() => {
-        flash.remove();
-    }, 300);
-}
+        dismissFlash();
+    }, 4000); // 4 Detik
+    <?php endif; ?>
 </script>
 
-<?php // Hapus session agar flash tidak muncul terus menerus saat refresh
-
-    unset($_SESSION["flash"]);
+<?php // Hapus sesi flash setelah ditampilkan
+unset($_SESSION["flash"]);
 endif;
 ?>
