@@ -34,11 +34,16 @@ loadEnv(__DIR__ . '/../.env');
 // Logikanya: Coba ambil dari Environment Variable (Wasmer/.env), 
 // jika tidak ada, baru pakai default (untuk jaga-jaga).
 
+// =========================================================================
+// 2. KONFIGURASI DATABASE
+// =========================================================================
+
+// Host & Port (Wasmer pakai DB_HOST dan DB_PORT)
 define("DB_HOST", getenv("DB_HOST") ?: "127.0.0.1");
-define("DB_PORT", getenv("DB_PORT") ?: "3306"); // TAMBAHKAN INI
+define("DB_PORT", getenv("DB_PORT") ?: "3306"); 
 define("DB_NAME", getenv("DB_NAME") ?: "db_siakad_texmaco");
-define("DB_USERNAME", getenv("DB_USER") ?: "root");
-define("DB_PASSWORD", getenv("DB_PASS") ?: "");
+define("DB_USERNAME", getenv("DB_USERNAME") ?: "root");
+define("DB_PASSWORD", getenv("DB_PASSWORD") ?: "");
 
 
 // =========================================================================
