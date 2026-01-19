@@ -7,37 +7,37 @@ use PDOException;
 class Database
 {
     private $host = DB_HOST;
+    private $port = DB_PORT; // 1. Tambahkan properti Port
     private $db_name = DB_NAME;
     private $username = DB_USERNAME;
     private $password = DB_PASSWORD;
 
-    // Simpan koneksi secara statis agar tidak terbuat berulang kali
     private static $instance = null;
 
     public function getConnection()
     {
-        // Jika koneksi sudah ada, langsung kembalikan yang sudah ada
         if (self::$instance !== null) {
             return self::$instance;
         }
 
         try {
+            // 2. Tambahkan ";port=" . $this->port ke dalam string koneksi
             self::$instance = new PDO(
-                "mysql:host=" . $this->host . ";dbname=" . $this->db_name,
+                "mysql:host=" . $this->host . ";port=" . $this->port . ";dbname=" . $this->db_name,
                 $this->username,
                 $this->password,
                 [
-                    // Tambahkan opsi agar koneksi stabil
                     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                    PDO::ATTR_PERSISTENT => false, // Opsional, tergantung kebutuhan server
+                    PDO::ATTR_PERSISTENT => false,
                 ]
             );
         } catch (PDOException $exception) {
-            // Pastikan fungsi redirect() tersedia di helper Anda
+            // Error handling tetap sama
+            error_log("DB Connection Error: " . $exception->getMessage()); // Log error untuk debugging
             redirect("/login")->with([
                 "error",
-                "Connection error: " . $exception->getMessage(),
+                "Connection error. Please check logs.", 
             ]);
             exit();
         }
