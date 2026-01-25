@@ -10,7 +10,7 @@ define("DB_USERNAME", "root"); // Wasmer pakai DB_USERNAME
 define("DB_PASSWORD", "");
 
 // =========================================================================
-// 4. KONFIGURASI APLIKASI
+// 2. KONFIGURASI APLIKASI
 // =========================================================================
 define("APP_NAME", "Siakad SMK Texmaco Subang");
 define("APP_DESCRIPTION", "Sistem Informasi Akademik SMK Texmaco Subang");
@@ -22,7 +22,7 @@ define("BASE_URL", $protocol . "://" . $domain);
 define("BASE_PATH", __DIR__ . "/..");
 
 // =========================================================================
-// 5. ENUMERASI DATA
+// 3. ENUMERASI DATA
 // =========================================================================
 define("ENUM", [
     "STATUS" => [
@@ -49,7 +49,7 @@ define("ENUM", [
 ]);
 
 // =========================================================================
-// 6. DEBUGGING (dd)
+// 4. DEBUGGING (dd)
 // =========================================================================
 function dd($data)
 {
